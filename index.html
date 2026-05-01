@@ -7,12 +7,13 @@
 
   <style>
     body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; color:#111; }
-    header { background:#111827; color:white; padding:20px; }
+    header { background:#111827; color:white; padding:20px; display:flex; align-items:center; gap:20px; }
+    header img { width:160px; background:white; padding:8px; border-radius:10px; }
     main { padding:20px; max-width:1200px; margin:auto; }
     .card { background:white; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 8px #0001; }
     .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     label { font-weight:bold; font-size:14px; }
-    input, textarea { width:100%; padding:10px; margin-top:5px; box-sizing:border-box; border:1px solid #ccc; border-radius:8px; }
+    input, textarea, select { width:100%; padding:10px; margin-top:5px; box-sizing:border-box; border:1px solid #ccc; border-radius:8px; }
     textarea { min-height:70px; }
     button { padding:10px 14px; border:0; border-radius:8px; cursor:pointer; font-weight:bold; margin:4px; }
     .primary { background:#111827; color:white; }
@@ -21,92 +22,132 @@
     .red { background:#b91c1c; color:white; }
     .item { border:1px solid #ddd; border-radius:12px; padding:14px; margin-bottom:14px; background:#fafafa; }
     .totals { background:#eef2f7; padding:16px; border-radius:12px; font-size:18px; }
-    @media(max-width:800px){ .grid { grid-template-columns:1fr; } }
+    @media(max-width:800px){ .grid { grid-template-columns:1fr; } header { flex-direction:column; align-items:flex-start; } }
   </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Broiler Quotation System</h1>
-  <p>Internal automatic quotation generator</p>
+  <img src="utc-logo.png" alt="UTC Logo">
+  <div>
+    <h1>Broiler Quotation System</h1>
+    <p>Internal automatic quotation generator</p>
+  </div>
 </header>
 
 <main>
 
-  <section class="card">
-    <h2>Project Data</h2>
+<section class="card">
+  <h2>Project Data</h2>
 
-    <div class="grid">
-      <label>Client Name
-        <input id="clientName" type="text" />
-      </label>
+  <div class="grid">
+    <label>Client Name
+      <input id="clientName" type="text" />
+    </label>
 
-      <label>Number of Houses
-        <input id="houses" type="number" value="2" />
-      </label>
+    <label>Number of Houses
+      <input id="houses" type="number" value="2" />
+    </label>
 
-      <label>Birds per House
-        <input id="birds" type="number" value="40000" />
-      </label>
+    <label>Birds per House
+      <input id="birds" type="number" value="40000" />
+    </label>
 
-      <label>House Length (m)
-        <input id="length" type="number" value="126" />
-      </label>
+    <label>House Length (m)
+      <input id="length" type="number" value="126" />
+    </label>
 
-      <label>House Width (m)
-        <input id="width" type="number" value="14" />
-      </label>
+    <label>House Width (m)
+      <input id="width" type="number" value="14" />
+    </label>
 
-      <label>House Height (m)
-        <input id="height" type="number" value="3" />
-      </label>
+    <label>Side Wall Height (m)
+      <input id="height" type="number" value="3" />
+    </label>
 
-      <label>Air Speed (m/s)
-        <input id="airSpeed" type="number" value="3" />
-      </label>
+    <label>Ridge Height (m)
+      <input id="ridge" type="number" value="1" />
+    </label>
 
-      <label>Fan Capacity (m³/h)
-        <input id="fanCapacity" type="number" value="44000" />
-      </label>
-    </div>
+    <label>Air Speed (m/s)
+      <input id="airSpeed" type="number" value="3" />
+    </label>
 
-    <br />
-    <button class="primary" onclick="calculate()">Calculate</button>
-  </section>
+    <label>Fan Capacity (m³/h)
+      <input id="fanCapacity" type="number" value="44000" />
+    </label>
+  </div>
+</section>
 
-  <section class="card">
-    <h2>Calculation Results</h2>
-    <div id="results">Click calculate.</div>
-  </section>
+<section class="card">
+  <h2>Cooling Pad Options</h2>
 
-  <section class="card">
-    <button class="green" onclick="addCalculatedItems()">Add Calculated Items</button>
-    <button class="blue" onclick="addCustomItem()">Add Custom Item</button>
-    <button class="primary" onclick="saveQuotation()">Save Quotation</button>
-    <button class="blue" onclick="exportWord()">Export Word</button>
-    <button class="red" onclick="exportPDF()">Export PDF</button>
-  </section>
+  <div class="grid">
+    <label>Cooling Pad Type
+      <select id="padType" onchange="applyPadPreset()">
+        <option value="150-1500-600-1.75">150mm - 1500 × 600mm - 1.75 m/s</option>
+        <option value="150-1800-600-1.75">150mm - 1800 × 600mm - 1.75 m/s</option>
+        <option value="150-1500-300-1.75">150mm - 1500 × 300mm - 1.75 m/s</option>
+        <option value="100-1500-600-1.50">100mm - 1500 × 600mm - 1.50 m/s</option>
+        <option value="custom">Custom</option>
+      </select>
+    </label>
 
-  <section class="card">
-    <h2>Quotation Items</h2>
-    <div id="items"></div>
+    <label>Pad Thickness (m)
+      <input id="padThickness" type="number" value="0.15" step="0.01" />
+    </label>
 
-    <div class="totals">
-      <p>Subtotal: <strong id="subtotal">0</strong> EGP</p>
+    <label>Pad Height (m)
+      <input id="padHeight" type="number" value="1.5" step="0.1" />
+    </label>
 
-      <label>Special Discount
-        <input id="discount" type="number" value="0" oninput="renderItems()" />
-      </label>
+    <label>Pad Width (m)
+      <input id="padWidth" type="number" value="0.6" step="0.1" />
+    </label>
 
-      <p>Grand Total: <strong id="grandTotal">0</strong> EGP</p>
-    </div>
-  </section>
+    <label>Pad Face Velocity (m/s)
+      <input id="padVelocity" type="number" value="1.75" step="0.05" />
+    </label>
+  </div>
+</section>
 
-  <section class="card">
-    <h2>Saved Quotations</h2>
-    <div id="savedQuotes"></div>
-  </section>
+<section class="card">
+  <button class="primary" onclick="calculate()">Calculate</button>
+</section>
+
+<section class="card">
+  <h2>Calculation Results</h2>
+  <div id="results">Click calculate.</div>
+</section>
+
+<section class="card">
+  <button class="green" onclick="addCalculatedItems()">Add Calculated Items</button>
+  <button class="blue" onclick="addCustomItem()">Add Custom Item</button>
+  <button class="primary" onclick="saveQuotation()">Save Quotation</button>
+  <button class="blue" onclick="exportWord()">Export Word</button>
+  <button class="red" onclick="exportPDF()">Export PDF</button>
+</section>
+
+<section class="card">
+  <h2>Quotation Items</h2>
+  <div id="items"></div>
+
+  <div class="totals">
+    <p>Subtotal: <strong id="subtotal">0</strong> EGP</p>
+
+    <label>Special Discount
+      <input id="discount" type="number" value="0" oninput="renderItems()" />
+    </label>
+
+    <p>Grand Total: <strong id="grandTotal">0</strong> EGP</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Saved Quotations</h2>
+  <div id="savedQuotes"></div>
+</section>
 
 </main>
 
@@ -119,16 +160,42 @@ function getNumber(id) {
   return Number(document.getElementById(id).value) || 0;
 }
 
+function applyPadPreset() {
+  const value = document.getElementById("padType").value;
+
+  if (value === "custom") return;
+
+  const parts = value.split("-");
+  const thicknessMM = Number(parts[0]);
+  const heightMM = Number(parts[1]);
+  const widthMM = Number(parts[2]);
+  const velocity = Number(parts[3]);
+
+  document.getElementById("padThickness").value = thicknessMM / 1000;
+  document.getElementById("padHeight").value = heightMM / 1000;
+  document.getElementById("padWidth").value = widthMM / 1000;
+  document.getElementById("padVelocity").value = velocity;
+}
+
 function calculate() {
   const houses = getNumber("houses");
   const length = getNumber("length");
   const width = getNumber("width");
   const height = getNumber("height");
+  const ridge = getNumber("ridge");
   const birds = getNumber("birds");
   const airSpeed = getNumber("airSpeed");
   const fanCapacity = getNumber("fanCapacity");
 
-  const crossSection = width * height;
+  const padThickness = getNumber("padThickness");
+  const padHeight = getNumber("padHeight");
+  const padWidth = getNumber("padWidth");
+  const padVelocity = getNumber("padVelocity");
+
+  const rectangleArea = width * height;
+  const roofTriangleArea = (width * ridge) / 2;
+  const crossSection = rectangleArea + roofTriangleArea;
+
   const requiredAirflow = crossSection * airSpeed * 3600;
   const fansPerHouse = Math.ceil(requiredAirflow / fanCapacity);
 
@@ -138,42 +205,52 @@ function calculate() {
   const feedingLinesPerHouse = Math.ceil((birds / 65) / (pipesPerLine * 4));
   const drinkingLinesPerHouse = Math.ceil((birds / 12) / (pipesPerLine * 15));
 
-  const padArea = requiredAirflow / 3600 / 1.75;
-  const coolingPadsPerHouse = Math.ceil(padArea / (1.5 * 0.6));
+  const padArea = requiredAirflow / 3600 / padVelocity;
+  const singlePadArea = padHeight * padWidth;
+  const coolingPadsPerHouse = Math.ceil(padArea / singlePadArea);
 
   const heatersPerHouse = Math.ceil(length / 30);
   const acfFansPerHouse = heatersPerHouse;
 
   calculation = {
     houses,
+    rectangleArea,
+    roofTriangleArea,
     crossSection,
     requiredAirflow,
     fansPerHouse,
     feedingLinesPerHouse,
     drinkingLinesPerHouse,
     padArea,
+    singlePadArea,
     coolingPadsPerHouse,
     heatersPerHouse,
-    acfFansPerHouse
+    acfFansPerHouse,
+    padThickness,
+    padHeight,
+    padWidth,
+    padVelocity
   };
 
   document.getElementById("results").innerHTML = `
-    <p>Cross Section Area: <strong>${crossSection.toFixed(2)} m²</strong></p>
+    <p>Rectangle Area: <strong>${rectangleArea.toFixed(2)} m²</strong></p>
+    <p>Roof Triangle Area: <strong>${roofTriangleArea.toFixed(2)} m²</strong></p>
+    <p>Total Cross Section Area: <strong>${crossSection.toFixed(2)} m²</strong></p>
     <p>Required Airflow: <strong>${Math.round(requiredAirflow).toLocaleString()} m³/h</strong></p>
     <p>Fans per House: <strong>${fansPerHouse}</strong></p>
     <p>Feeding Lines per House: <strong>${feedingLinesPerHouse}</strong></p>
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
-    <p>Cooling Pad Area: <strong>${padArea.toFixed(2)} m²</strong></p>
+    <p>Cooling Pad Required Area: <strong>${padArea.toFixed(2)} m²</strong></p>
+    <p>Single Pad Area: <strong>${singlePadArea.toFixed(2)} m²</strong></p>
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
+    <p>Cooling Pad Thickness: <strong>${padThickness} m</strong></p>
     <p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
     <p>ACF21 Fans per House: <strong>${acfFansPerHouse}</strong></p>
   `;
 }
 
 function addCalculatedItems() {
-  if (!calculation.houses) {
-    calculate();
-  }
+  if (!calculation.houses) calculate();
 
   items = [
     {
@@ -195,7 +272,7 @@ function addCalculatedItems() {
     {
       include: true,
       name: "Tunnel Ventilation Fans",
-      description: "Tunnel ventilation fans calculated according to house dimensions, air speed and fan capacity.",
+      description: "Tunnel ventilation fans calculated according to house dimensions, ridge height, air speed and fan capacity.",
       qty: calculation.fansPerHouse * calculation.houses,
       unit: "fans",
       price: 0
@@ -203,7 +280,7 @@ function addCalculatedItems() {
     {
       include: true,
       name: "Cooling Pads",
-      description: "Cooling pad system calculated according to required airflow and pad face velocity.",
+      description: `Cooling pad system calculated according to required airflow. Pad thickness: ${calculation.padThickness} m, pad size: ${calculation.padHeight} m × ${calculation.padWidth} m, face velocity: ${calculation.padVelocity} m/s.`,
       qty: calculation.coolingPadsPerHouse * calculation.houses,
       unit: "panels",
       price: 0
@@ -284,9 +361,7 @@ function renderItems() {
   items.forEach((item, index) => {
     const total = item.qty * item.price;
 
-    if (item.include) {
-      subtotal += total;
-    }
+    if (item.include) subtotal += total;
 
     container.innerHTML += `
       <div class="item">
@@ -364,6 +439,7 @@ function buildQuoteHTML() {
       <title>Quotation</title>
       <style>
         body { font-family: Arial; padding: 30px; }
+        .logo { width:180px; margin-bottom:20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #111827; color: white; }
         th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: top; }
@@ -372,6 +448,7 @@ function buildQuoteHTML() {
       </style>
     </head>
     <body>
+      <img class="logo" src="utc-logo.png">
       <h1>Quotation</h1>
       <p><strong>Client:</strong> ${client}</p>
       <p><strong>Company:</strong> UTC</p>
