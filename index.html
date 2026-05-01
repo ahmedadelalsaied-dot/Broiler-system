@@ -6,151 +6,504 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: Arial; margin:0; background:#f4f6f8; }
-header { background:#111827; color:white; padding:20px; display:flex; align-items:center; gap:20px; }
-header img { width:140px; background:white; padding:6px; border-radius:8px; }
-main { max-width:1200px; margin:auto; padding:20px; }
-.card { background:white; padding:20px; border-radius:12px; margin-bottom:20px; }
-.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-input, select { padding:8px; width:100%; }
-button { padding:10px; margin-top:10px; cursor:pointer; }
-.item { border:1px solid #ddd; padding:10px; margin-top:10px; border-radius:8px; }
-@media(max-width:800px){ .grid { grid-template-columns:1fr; } }
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#111}
+header{background:#111827;color:white;padding:24px;display:flex;align-items:center;gap:24px}
+.logoBox{background:white;border-radius:12px;padding:10px;width:180px;height:120px;display:flex;align-items:center;justify-content:center}
+.logoBox img{max-width:100%;max-height:100%;object-fit:contain}
+main{max-width:1200px;margin:auto;padding:24px}
+.card{background:white;padding:22px;border-radius:14px;margin-bottom:20px;box-shadow:0 2px 8px #0001}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{font-weight:bold;font-size:14px}
+input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+textarea{min-height:80px}
+button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:bold;margin:4px}
+.primary{background:#111827;color:white}
+.green{background:#15803d;color:white}
+.blue{background:#1d4ed8;color:white}
+.red{background:#b91c1c;color:white}
+.item{border:1px solid #ddd;background:#fafafa;border-radius:12px;padding:16px;margin-bottom:14px}
+.totals{background:#eef2f7;padding:16px;border-radius:12px;font-size:18px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 
 <body>
 
 <header>
-<img src="utc-logo.png" onerror="this.onerror=null;this.src='./utc-logo.png';">
-<div>
-<h1>Broiler Quotation System</h1>
-<p>UTC Internal System</p>
-</div>
+  <div class="logoBox">
+    <img id="utcLogo" src="https://unelsaid.com/images/logo.png" alt="UTC Logo">
+  </div>
+  <div>
+    <h1>Broiler Quotation System</h1>
+    <p>Internal automatic quotation generator</p>
+  </div>
 </header>
 
 <main>
 
-<div class="card">
+<section class="card">
 <h2>Project Data</h2>
 <div class="grid">
-<input id="length" placeholder="Length (m)" value="126">
-<input id="width" placeholder="Width (m)" value="14">
-<input id="height" placeholder="Side Height (m)" value="3">
-<input id="ridge" placeholder="Ridge Height (m)" value="1">
-<input id="birds" placeholder="Birds per House" value="40000">
-<input id="houses" placeholder="Number of Houses" value="2">
-<input id="airSpeed" placeholder="Air Speed (m/s)" value="3">
-<input id="fanCapacity" placeholder="Fan Capacity (m³/h)" value="44000">
+<label>Client Name<input id="clientName" type="text"></label>
+<label>Number of Houses<input id="houses" type="number" value="2"></label>
+<label>Birds per House<input id="birds" type="number" value="40000"></label>
+<label>House Length (m)<input id="length" type="number" value="126"></label>
+<label>House Width (m)<input id="width" type="number" value="14"></label>
+<label>Side Wall Height (m)<input id="height" type="number" value="3"></label>
+<label>Ridge Height (m)<input id="ridge" type="number" value="1"></label>
+<label>Air Speed (m/s)<input id="airSpeed" type="number" value="3"></label>
+<label>Fan Capacity (m³/h)<input id="fanCapacity" type="number" value="44000"></label>
 </div>
-</div>
+<br>
+<button class="primary" onclick="calculate()">Calculate</button>
+</section>
 
-<div class="card">
+<section class="card">
 <h2>Cooling Pad Options</h2>
 <div class="grid">
-
-<select id="padType" onchange="applyPad()">
-<option value="150-1.5-0.6-1.75">150mm - 1.5×0.6 - 1.75 m/s</option>
-<option value="150-1.8-0.6-1.75">150mm - 1.8×0.6 - 1.75 m/s</option>
-<option value="150-1.5-0.3-1.75">150mm - 1.5×0.3 - 1.75 m/s</option>
-<option value="100-1.5-0.6-1.5">100mm - 1.5×0.6 - 1.5 m/s</option>
+<label>Cooling Pad Type
+<select id="padType" onchange="applyPadPreset()">
+<option value="150-1.5-0.6-1.75">150mm - 1.5 × 0.6m - 1.75 m/s</option>
+<option value="150-1.8-0.6-1.75">150mm - 1.8 × 0.6m - 1.75 m/s</option>
+<option value="150-1.5-0.3-1.75">150mm - 1.5 × 0.3m - 1.75 m/s</option>
+<option value="100-1.5-0.6-1.5">100mm - 1.5 × 0.6m - 1.5 m/s</option>
 <option value="custom">Custom</option>
 </select>
-
-<input id="padThickness" value="0.15" placeholder="Thickness (m)">
-<input id="padHeight" value="1.5" placeholder="Height (m)">
-<input id="padWidth" value="0.6" placeholder="Width (m)">
-<input id="padVelocity" value="1.75" placeholder="Velocity (m/s)">
-
+</label>
+<label>Pad Thickness (m)<input id="padThickness" type="number" value="0.15" step="0.01"></label>
+<label>Pad Height (m)<input id="padHeight" type="number" value="1.5" step="0.1"></label>
+<label>Pad Width (m)<input id="padWidth" type="number" value="0.6" step="0.1"></label>
+<label>Pad Face Velocity (m/s)<input id="padVelocity" type="number" value="1.75" step="0.05"></label>
 </div>
-</div>
+</section>
 
-<div class="card">
-<button onclick="calculate()">Calculate</button>
-<div id="results"></div>
-</div>
+<section class="card">
+<h2>Calculation Results</h2>
+<div id="results">Click calculate.</div>
+</section>
 
-<div class="card">
-<button onclick="addItems()">Add Items</button>
+<section class="card">
+<button class="green" onclick="addCalculatedItems()">Add Calculated Items</button>
+<button class="blue" onclick="addCustomItem()">Add Custom Item</button>
+<button class="primary" onclick="saveQuotation()">Save Quotation</button>
+<button class="blue" onclick="exportWord()">Export Word</button>
+<button class="red" onclick="exportPDF()">Export PDF</button>
+</section>
+
+<section class="card">
+<h2>Quotation Items</h2>
 <div id="items"></div>
+
+<div class="totals">
+<p>Subtotal: <strong id="subtotal">0</strong> EGP</p>
+<label>Special Discount
+<input id="discount" type="number" value="0" oninput="renderItems()">
+</label>
+<p>Grand Total: <strong id="grandTotal">0</strong> EGP</p>
 </div>
+</section>
+
+<section class="card">
+<h2>Saved Quotations</h2>
+<div id="savedQuotes"></div>
+</section>
 
 </main>
 
 <script>
+const logo = document.getElementById("utcLogo");
+const logoFallbacks = [
+  "https://www.unelsaid.com/images/logo.png",
+  "https://unelsaid.com/images/Logo.png",
+  "https://www.unelsaid.com/images/Logo.png",
+  "https://unelsaid.com/images/Logo-footer.png",
+  "utc-logo.png"
+];
+let logoIndex = 0;
+logo.onerror = function(){
+  if(logoIndex < logoFallbacks.length){
+    logo.src = logoFallbacks[logoIndex++];
+  }
+};
 
-let calc = {}
-let items = []
+let calculation = {};
+let items = [];
+let savedQuotes = JSON.parse(localStorage.getItem("savedQuotes") || "[]");
 
-function g(id){ return Number(document.getElementById(id).value)||0 }
+function getNumber(id){
+  return Number(document.getElementById(id).value) || 0;
+}
 
-function applyPad(){
-let v = document.getElementById("padType").value
-if(v==="custom") return
-let p=v.split("-")
-document.getElementById("padThickness").value=p[0]/1000
-document.getElementById("padHeight").value=p[1]
-document.getElementById("padWidth").value=p[2]
-document.getElementById("padVelocity").value=p[3]
+function safeText(text){
+  return String(text || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function applyPadPreset(){
+  const value = document.getElementById("padType").value;
+  if(value === "custom") return;
+
+  const parts = value.split("-");
+  document.getElementById("padThickness").value = Number(parts[0]) / 1000;
+  document.getElementById("padHeight").value = parts[1];
+  document.getElementById("padWidth").value = parts[2];
+  document.getElementById("padVelocity").value = parts[3];
 }
 
 function calculate(){
+  const houses = getNumber("houses");
+  const length = getNumber("length");
+  const width = getNumber("width");
+  const height = getNumber("height");
+  const ridge = getNumber("ridge");
+  const birds = getNumber("birds");
+  const airSpeed = getNumber("airSpeed");
+  const fanCapacity = getNumber("fanCapacity");
 
-let L=g("length"), W=g("width"), H=g("height"), R=g("ridge")
-let houses=g("houses"), birds=g("birds")
+  const padThickness = getNumber("padThickness");
+  const padHeight = getNumber("padHeight");
+  const padWidth = getNumber("padWidth");
+  const padVelocity = getNumber("padVelocity");
 
-let cross = (W*H) + (W*R/2)
-let airflow = cross * g("airSpeed") * 3600
-let fans = Math.ceil(airflow / g("fanCapacity"))
+  const rectangleArea = width * height;
+  const roofTriangleArea = (width * ridge) / 2;
+  const crossSection = rectangleArea + roofTriangleArea;
 
-let feeding = Math.ceil(birds/1000)
-let drinking = Math.ceil(birds/2000)
+  const requiredAirflow = crossSection * airSpeed * 3600;
+  const fansPerHouse = fanCapacity > 0 ? Math.ceil(requiredAirflow / fanCapacity) : 0;
 
-let padArea = airflow/3600 / g("padVelocity")
-let padUnit = g("padHeight") * g("padWidth")
-let pads = Math.ceil(padArea / padUnit)
+  const lineLength = Math.max(length - 4, 0);
+  const pipesPerLine = Math.ceil(lineLength / 3);
 
-let heaters = Math.ceil(L/30)
-let acf = heaters
+  const feedingLinesPerHouse = pipesPerLine > 0 ? Math.ceil((birds / 65) / (pipesPerLine * 4)) : 0;
+  const drinkingLinesPerHouse = pipesPerLine > 0 ? Math.ceil((birds / 12) / (pipesPerLine * 15)) : 0;
 
-calc = {houses,feeding,drinking,fans,pads,heaters,acf,cross,airflow}
+  const padArea = padVelocity > 0 ? requiredAirflow / 3600 / padVelocity : 0;
+  const singlePadArea = padHeight * padWidth;
+  const coolingPadsPerHouse = singlePadArea > 0 ? Math.ceil(padArea / singlePadArea) : 0;
 
-document.getElementById("results").innerHTML = `
-Cross Section: ${cross.toFixed(2)} m²<br>
-Airflow: ${Math.round(airflow)} m³/h<br>
-Fans: ${fans}<br>
-Pads: ${pads}<br>
-Heaters: ${heaters}<br>
-ACF Fans: ${acf}
-`
+  const heatersPerHouse = Math.ceil(length / 30);
+  const acfFansPerHouse = heatersPerHouse;
+
+  calculation = {
+    houses,
+    rectangleArea,
+    roofTriangleArea,
+    crossSection,
+    requiredAirflow,
+    fansPerHouse,
+    feedingLinesPerHouse,
+    drinkingLinesPerHouse,
+    padArea,
+    singlePadArea,
+    coolingPadsPerHouse,
+    heatersPerHouse,
+    acfFansPerHouse,
+    padThickness,
+    padHeight,
+    padWidth,
+    padVelocity
+  };
+
+  document.getElementById("results").innerHTML = `
+    <p>Rectangle Area: <strong>${rectangleArea.toFixed(2)} m²</strong></p>
+    <p>Roof Triangle Area: <strong>${roofTriangleArea.toFixed(2)} m²</strong></p>
+    <p>Total Cross Section Area: <strong>${crossSection.toFixed(2)} m²</strong></p>
+    <p>Required Airflow: <strong>${Math.round(requiredAirflow).toLocaleString()} m³/h</strong></p>
+    <p>Fans per House: <strong>${fansPerHouse}</strong></p>
+    <p>Feeding Lines per House: <strong>${feedingLinesPerHouse}</strong></p>
+    <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
+    <p>Cooling Pad Required Area: <strong>${padArea.toFixed(2)} m²</strong></p>
+    <p>Single Pad Area: <strong>${singlePadArea.toFixed(2)} m²</strong></p>
+    <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
+    <p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
+    <p>ACF21 Fans per House: <strong>${acfFansPerHouse}</strong></p>
+  `;
 }
 
-function addItems(){
+function addCalculatedItems(){
+  if(!calculation.houses) calculate();
 
-items = [
-{name:"Feeding System",qty:calc.feeding*calc.houses},
-{name:"Drinking System",qty:calc.drinking*calc.houses},
-{name:"Ventilation Fans",qty:calc.fans*calc.houses},
-{name:"Cooling Pads",qty:calc.pads*calc.houses},
-{name:"Heating System",qty:calc.heaters*calc.houses},
-{name:"ACF Fans",qty:calc.acf*calc.houses}
-]
+  items = [
+    {
+      include:true,
+      name:"Automatic Feeding System",
+      description:"Automatic feeding system (pan feeder) ROXELL NEW MiniMax including suspension system, galvanized pipes, 4 pans per pipe, 14 feeding openings per pan, auger spring, control sensors, feed hoppers and drive motors.",
+      qty:calculation.feedingLinesPerHouse * calculation.houses,
+      unit:"lines",
+      price:0
+    },
+    {
+      include:true,
+      name:"Automatic Drinking System",
+      description:"Automatic nipple drinking system ROXELL including PVC pipes, 15 nipples per pipe, stainless steel nipples, cups, regulators, suspension system, clamps and end-line accessories.",
+      qty:calculation.drinkingLinesPerHouse * calculation.houses,
+      unit:"lines",
+      price:0
+    },
+    {
+      include:true,
+      name:"Tunnel Ventilation Fans",
+      description:"Tunnel ventilation fans calculated according to house dimensions, ridge height, air speed and fan capacity.",
+      qty:calculation.fansPerHouse * calculation.houses,
+      unit:"fans",
+      price:0
+    },
+    {
+      include:true,
+      name:"Cooling Pads",
+      description:`Cooling pad system. Thickness: ${calculation.padThickness} m, size: ${calculation.padHeight} m × ${calculation.padWidth} m, face velocity: ${calculation.padVelocity} m/s.`,
+      qty:calculation.coolingPadsPerHouse * calculation.houses,
+      unit:"panels",
+      price:0
+    },
+    {
+      include:true,
+      name:"Heating System",
+      description:"Pericoli 140E heater system. One heater every 30 meters of house length.",
+      qty:calculation.heatersPerHouse * calculation.houses,
+      unit:"heaters",
+      price:0
+    },
+    {
+      include:true,
+      name:"ACF21 Air Circulation Fans",
+      description:"Pericoli ACF21 air circulation fans. One ACF fan after each heater position, based on 30 meter spacing.",
+      qty:calculation.acfFansPerHouse * calculation.houses,
+      unit:"fans",
+      price:0
+    },
+    {
+      include:true,
+      name:"Control System",
+      description:"Main poultry climate control system for ventilation, cooling, heating, lighting, alarms and sensors.",
+      qty:calculation.houses,
+      unit:"panels",
+      price:0
+    },
+    {
+      include:true,
+      name:"Installation",
+      description:"Installation of supplied equipment inside the broiler house.",
+      qty:calculation.houses,
+      unit:"houses",
+      price:0
+    }
+  ];
 
-render()
+  renderItems();
 }
 
-function render(){
-let div = document.getElementById("items")
-div.innerHTML=""
-items.forEach(i=>{
-div.innerHTML+=`
-<div class="item">
-<b>${i.name}</b><br>
-Qty: ${i.qty}
-</div>`
-})
+function addCustomItem(){
+  items.push({include:true,name:"",description:"",qty:1,unit:"unit",price:0});
+  renderItems();
 }
 
+function updateItem(index, field, value){
+  if(field === "include") items[index][field] = value;
+  else if(field === "qty" || field === "price") items[index][field] = Number(value) || 0;
+  else items[index][field] = value;
+  renderItems();
+}
+
+function removeItem(index){
+  items.splice(index,1);
+  renderItems();
+}
+
+function renderItems(){
+  const container = document.getElementById("items");
+  container.innerHTML = "";
+  let subtotal = 0;
+
+  items.forEach((item,index)=>{
+    const total = item.qty * item.price;
+    if(item.include) subtotal += total;
+
+    container.innerHTML += `
+      <div class="item">
+        <label>
+          <input type="checkbox" ${item.include ? "checked" : ""} onchange="updateItem(${index}, 'include', this.checked)">
+          Include in quotation
+        </label>
+
+        <div class="grid">
+          <label>Item Name
+            <input value="${safeText(item.name)}" oninput="updateItem(${index}, 'name', this.value)">
+          </label>
+          <label>Quantity
+            <input type="number" value="${item.qty}" oninput="updateItem(${index}, 'qty', this.value)">
+          </label>
+          <label>Unit
+            <input value="${safeText(item.unit)}" oninput="updateItem(${index}, 'unit', this.value)">
+          </label>
+          <label>Unit Price
+            <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)">
+          </label>
+          <label>Total Price
+            <input value="${total.toLocaleString()} EGP" readonly>
+          </label>
+        </div>
+
+        <label>Description
+          <textarea oninput="updateItem(${index}, 'description', this.value)">${safeText(item.description)}</textarea>
+        </label>
+
+        <br>
+        <button class="red" onclick="removeItem(${index})">Remove Item</button>
+      </div>
+    `;
+  });
+
+  const discount = getNumber("discount");
+  const grandTotal = Math.max(subtotal - discount, 0);
+
+  document.getElementById("subtotal").innerText = subtotal.toLocaleString();
+  document.getElementById("grandTotal").innerText = grandTotal.toLocaleString();
+}
+
+function buildQuoteHTML(){
+  const client = document.getElementById("clientName").value || "Client";
+  const discount = getNumber("discount");
+
+  let subtotal = 0;
+  let rows = "";
+
+  items.filter(item => item.include).forEach(item=>{
+    const total = item.qty * item.price;
+    subtotal += total;
+
+    rows += `
+      <tr>
+        <td><strong>${safeText(item.name)}</strong><br>${safeText(item.description)}</td>
+        <td>${item.qty}</td>
+        <td>${safeText(item.unit)}</td>
+        <td>${item.price.toLocaleString()} EGP</td>
+        <td>${total.toLocaleString()} EGP</td>
+      </tr>
+    `;
+  });
+
+  const grandTotal = Math.max(subtotal - discount, 0);
+
+  return `
+    <html>
+    <head>
+      <title>Quotation</title>
+      <style>
+        body{font-family:Arial;padding:30px}
+        .logo{width:180px;margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;margin-top:20px}
+        th{background:#111827;color:white}
+        th,td{border:1px solid #ccc;padding:10px;text-align:center;vertical-align:top}
+        td:first-child,th:first-child{text-align:left}
+        .total{margin-top:20px;font-size:18px;text-align:right}
+      </style>
+    </head>
+    <body>
+      <img class="logo" src="${document.getElementById("utcLogo").src}">
+      <h1>Quotation</h1>
+      <p><strong>Client:</strong> ${safeText(client)}</p>
+      <p><strong>Company:</strong> UTC</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th>Total Price</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="total">
+        <p>Subtotal: ${subtotal.toLocaleString()} EGP</p>
+        <p>Special Discount: ${discount.toLocaleString()} EGP</p>
+        <h2>Grand Total: ${grandTotal.toLocaleString()} EGP</h2>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function exportPDF(){
+  const win = window.open("","_blank");
+  win.document.write(buildQuoteHTML());
+  win.document.close();
+  win.print();
+}
+
+function exportWord(){
+  const html = buildQuoteHTML();
+  const blob = new Blob([html],{type:"application/msword"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "quotation.doc";
+  a.click();
+}
+
+function saveQuotation(){
+  const quote = {
+    id:Date.now(),
+    client:document.getElementById("clientName").value || "Client",
+    date:new Date().toLocaleString(),
+    items:JSON.parse(JSON.stringify(items)),
+    discount:document.getElementById("discount").value
+  };
+
+  savedQuotes.unshift(quote);
+  localStorage.setItem("savedQuotes",JSON.stringify(savedQuotes));
+  renderSavedQuotes();
+  alert("Quotation saved.");
+}
+
+function loadQuotation(id){
+  const quote = savedQuotes.find(q => q.id === id);
+  if(!quote) return;
+
+  document.getElementById("clientName").value = quote.client;
+  document.getElementById("discount").value = quote.discount || 0;
+  items = quote.items || [];
+  renderItems();
+}
+
+function deleteQuotation(id){
+  savedQuotes = savedQuotes.filter(q => q.id !== id);
+  localStorage.setItem("savedQuotes",JSON.stringify(savedQuotes));
+  renderSavedQuotes();
+}
+
+function renderSavedQuotes(){
+  const div = document.getElementById("savedQuotes");
+
+  if(!savedQuotes.length){
+    div.innerHTML = "<p>No saved quotations yet.</p>";
+    return;
+  }
+
+  div.innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr><th>Client</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        ${savedQuotes.map(q => `
+          <tr>
+            <td>${safeText(q.client)}</td>
+            <td>${safeText(q.date)}</td>
+            <td>
+              <button class="blue" onclick="loadQuotation(${q.id})">Load</button>
+              <button class="red" onclick="deleteQuotation(${q.id})">Delete</button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+renderSavedQuotes();
 </script>
 
 </body>
