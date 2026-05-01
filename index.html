@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HATO Broiler Quotation System</title>
+  <title>Broiler Quotation System</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #111; }
     header { background: #111827; color: white; padding: 24px; }
@@ -32,7 +32,7 @@
 <body>
 
 <header>
-  <h1>HATO Broiler Quotation System</h1>
+  <h1>Broiler Quotation System</h1>
   <p>Internal automatic quotation generator</p>
 </header>
 
@@ -156,7 +156,7 @@ function addCalculatedItems() {
     {
       include: true,
       name: "Automatic Feeding System",
-      description: "Automatic pan feeding system for broiler house including lines, pipes, pans, suspension and operating accessories.",
+      description:"Automatic feeding system (pan feeder) ROXELL NEW MiniMax including suspension system, galvanized pipes, 4 pans per pipe, 14 feeding openings per pan, auger spring, control sensors, feed hoppers and drive motors.",
       qty: calculation.feedingLinesPerHouse * calculation.houses,
       unit: "lines",
       price: 0
@@ -164,7 +164,7 @@ function addCalculatedItems() {
     {
       include: true,
       name: "Automatic Drinking System",
-      description: "Automatic nipple drinking system including PVC lines, nipples, regulators, end sets and suspension accessories.",
+      description: "Automatic nipple drinking system ROXELL including PVC pipes, 15 nipples per pipe, stainless steel nipples, cups, regulators, suspension system, clamps and end-line accessories.",
       qty: calculation.drinkingLinesPerHouse * calculation.houses,
       unit: "lines",
       price: 0
