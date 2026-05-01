@@ -148,8 +148,8 @@ acfFansPerHouse
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
     <p>Cooling Pad Area: <strong>${padArea.toFixed(2)} m²</strong></p>
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
-    const heatersPerHouse = Math.ceil(length / 30);
-const acfFansPerHouse = heatersPerHouse;
+<p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
+<p>ACF21 Circulation Fans per House: <strong>${acfFansPerHouse}</strong></p>
   `;
 }
 
@@ -189,6 +189,22 @@ function addCalculatedItems() {
       unit: "panels",
       price: 0
     },
+    {
+  include: true,
+  name: "Heating System",
+  description: "Pericoli 140E heater system. Heater layout is calculated at one heater every 30 meters of house length.",
+  qty: calculation.heatersPerHouse * calculation.houses,
+  unit: "heaters",
+  price: 0
+},
+{
+  include: true,
+  name: "ACF21 Air Circulation Fans",
+  description: "Pericoli ACF21 air circulation fans. ACF layout follows the heater layout: one ACF fan after each heater position, based on 30 meter spacing.",
+  qty: calculation.acfFansPerHouse * calculation.houses,
+  unit: "fans",
+  price: 0
+},
     {
       include: true,
       name: "Control System",
