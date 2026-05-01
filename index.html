@@ -1,40 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Broiler Quotation System</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #111; }
-    header { background: #111827; color: white; padding: 24px; }
-    main { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px #0001; }
-    h1, h2 { margin-top: 0; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    label { font-weight: bold; font-size: 14px; }
-    input, textarea, select { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-    textarea { min-height: 70px; }
-    button { padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .primary { background: #111827; color: white; }
-    .green { background: #15803d; color: white; }
-    .red { background: #b91c1c; color: white; }
-    .blue { background: #1d4ed8; color: white; }
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th { background: #111827; color: white; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; vertical-align: top; }
-    td:first-child, th:first-child { text-align: left; }
-    .item { border: 1px solid #ddd; border-radius: 14px; padding: 14px; margin-bottom: 14px; background: #fafafa; }
-    .totals { background: #eef2f7; padding: 16px; border-radius: 12px; font-size: 18px; }
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8">
+<title>Broiler Quotation System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial; background:#f4f6f8; margin:0 }
+header { background:#111827;color:white;padding:20px }
+main { padding:20px; max-width:1200px; margin:auto }
+.card { background:white;padding:20px;border-radius:12px;margin-bottom:20px }
+input, textarea { width:100%;padding:8px;margin-top:5px }
+button { padding:10px;margin-top:10px;cursor:pointer }
+</style>
 </head>
+
 <body>
 
 <header>
-  <h1>Broiler Quotation System</h1>
-  <p>Internal automatic quotation generator</p>
+<h1>Broiler Quotation System</h1>
 </header>
+
+<main>
+
+<div class="card">
+<h2>House Data</h2>
+<input id="length" placeholder="Length" value="126">
+<input id="width" placeholder="Width" value="14">
+<input id="height" placeholder="Height" value="3">
+<input id="birds" placeholder="Birds" value="40000">
+<input id="houses" placeholder="Houses" value="2">
+<input id="airSpeed" placeholder="Air Speed" value="3">
+<input id="fanCapacity" placeholder="Fan Capacity" value="44000">
+<button onclick="calculate()">Calculate</button>
+</div>
+
+<div class="card">
+<h2>Results</h2>
+<div id="results"></div>
+</div>
+
+<div class="card">
+<h2>Items</h2>
+<button onclick="addCalculatedItems()">Add Calculated Items</button>
+<div id="items"></div>
+</div>
+
+</main>
+
+<script>
+
+let calculation = {}
+let items = []
+
+function calculate(){
+let length = Number(lengthInput.value)
+let width = Number(widthInput.value)
+let height = Number(heightInput.value)
+let birds = Number(birdsInput.value)
+let houses = Number(housesInput.value)
+let airSpeed = Number(airSpeedInput.value)
+let fanCapacity = Number(fanCapacityInput.value)
+
+let cross = width * height
+let airflow = cross * airSpeed * 3600
+let fans = Math.ceil(airflow / fanCapacity)
+
+let feeding = Math.ceil((birds/65)/10)
+let drinking = Math.ceil((birds/12)/20)
+
+let pads = Math.ceil(airflow/5000)
+
+// NEW
+let heaters = Math.ceil(length / 30)
+let acf = heaters
+
+calculation = {
+houses,
+feeding,
+drinking,
+fans,
+pads,
+heaters,
+acf
+}
+
+results.innerHTML = `
+Fans: ${fans}<br>
+Feeding lines: ${feeding}<br>
+Drinking lines: ${drinking}<br>
+Cooling pads: ${pads}<br>
+Heaters: ${heaters}<br>
+ACF Fans: ${acf}
+`
+}
+
+function addCalculatedItems(){
+
+items = [
+
+{
+name:"Feeding System",
+description:"ROXELL MiniMax feeding system including pipes, pans, auger, motors and accessories.",
+qty:calculation.feeding * calculation.houses,
+price:0
+},
+
+{
+name:"Drinking System",
+description:"ROXELL nipple drinking system including PVC pipes, nipples, regulators and accessories.",
+qty:calculation.drinking * calculation.houses,
+price:0
+},
+
+{
+name:"Ventilation Fans",
+description:"Tunnel ventilation fans calculated based on airflow.",
+qty:calculation.fans * calculation.houses,
+price:0
+},
+
+{
+name:"Cooling Pads",
+description:"Cooling pad system based on airflow requirements.",
+qty:calculation.pads * calculation.houses,
+price:0
+},
+
+{
+name:"Heating System",
+description:"Pericoli heater system. One heater every 30 meters.",
+qty:calculation.heaters * calculation.houses,
+price:0
+},
+
+{
+name:"ACF21 Fans",
+description:"ACF circulation fans. One fan after each heater (30m spacing).",
+qty:calculation.acf * calculation.houses,
+price:0
+}
+
+]
+
+renderItems()
+}
+
+function renderItems(){
+itemsDiv.innerHTML=""
+
+items.forEach((i,index)=>{
+itemsDiv.innerHTML += `
+<div>
+<h3>${i.name}</h3>
+<p>${i.description}</p>
+Qty: ${i.qty}
+</div>
+`
+})
+}
+
+</script>
+
+</body>
+</html></header>
 
 <main>
 
