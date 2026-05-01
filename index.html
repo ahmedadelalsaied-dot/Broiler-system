@@ -15,13 +15,14 @@ main { max-width:1200px; margin:auto; padding:20px; }
 input, select { padding:8px; width:100%; }
 button { padding:10px; margin-top:10px; cursor:pointer; }
 .item { border:1px solid #ddd; padding:10px; margin-top:10px; border-radius:8px; }
+@media(max-width:800px){ .grid { grid-template-columns:1fr; } }
 </style>
 </head>
 
 <body>
 
 <header>
-<img src="./utc-logo.png" onerror="this.src='utc-logo.png'">
+<img src="utc-logo.png" onerror="this.onerror=null;this.src='./utc-logo.png';">
 <div>
 <h1>Broiler Quotation System</h1>
 <p>UTC Internal System</p>
@@ -33,31 +34,34 @@ button { padding:10px; margin-top:10px; cursor:pointer; }
 <div class="card">
 <h2>Project Data</h2>
 <div class="grid">
-<input id="length" placeholder="Length" value="126">
-<input id="width" placeholder="Width" value="14">
-<input id="height" placeholder="Side Height" value="3">
-<input id="ridge" placeholder="Ridge Height" value="1">
-<input id="birds" placeholder="Birds" value="40000">
-<input id="houses" placeholder="Houses" value="2">
-<input id="airSpeed" placeholder="Air Speed" value="3">
-<input id="fanCapacity" placeholder="Fan Capacity" value="44000">
+<input id="length" placeholder="Length (m)" value="126">
+<input id="width" placeholder="Width (m)" value="14">
+<input id="height" placeholder="Side Height (m)" value="3">
+<input id="ridge" placeholder="Ridge Height (m)" value="1">
+<input id="birds" placeholder="Birds per House" value="40000">
+<input id="houses" placeholder="Number of Houses" value="2">
+<input id="airSpeed" placeholder="Air Speed (m/s)" value="3">
+<input id="fanCapacity" placeholder="Fan Capacity (m³/h)" value="44000">
 </div>
 </div>
 
 <div class="card">
-<h2>Cooling Pads</h2>
+<h2>Cooling Pad Options</h2>
 <div class="grid">
+
 <select id="padType" onchange="applyPad()">
-<option value="150-1.5-0.6-1.75">150mm - 1.5x0.6 - 1.75</option>
-<option value="150-1.8-0.6-1.75">150mm - 1.8x0.6 - 1.75</option>
-<option value="100-1.5-0.6-1.5">100mm - 1.5x0.6 - 1.5</option>
+<option value="150-1.5-0.6-1.75">150mm - 1.5×0.6 - 1.75 m/s</option>
+<option value="150-1.8-0.6-1.75">150mm - 1.8×0.6 - 1.75 m/s</option>
+<option value="150-1.5-0.3-1.75">150mm - 1.5×0.3 - 1.75 m/s</option>
+<option value="100-1.5-0.6-1.5">100mm - 1.5×0.6 - 1.5 m/s</option>
 <option value="custom">Custom</option>
 </select>
 
-<input id="padThickness" placeholder="Thickness (m)" value="0.15">
-<input id="padHeight" placeholder="Height (m)" value="1.5">
-<input id="padWidth" placeholder="Width (m)" value="0.6">
-<input id="padVelocity" placeholder="Velocity" value="1.75">
+<input id="padThickness" value="0.15" placeholder="Thickness (m)">
+<input id="padHeight" value="1.5" placeholder="Height (m)">
+<input id="padWidth" value="0.6" placeholder="Width (m)">
+<input id="padVelocity" value="1.75" placeholder="Velocity (m/s)">
+
 </div>
 </div>
 
@@ -81,13 +85,13 @@ let items = []
 function g(id){ return Number(document.getElementById(id).value)||0 }
 
 function applyPad(){
-let v = padType.value
+let v = document.getElementById("padType").value
 if(v==="custom") return
 let p=v.split("-")
-padThickness.value=p[0]/1000
-padHeight.value=p[1]
-padWidth.value=p[2]
-padVelocity.value=p[3]
+document.getElementById("padThickness").value=p[0]/1000
+document.getElementById("padHeight").value=p[1]
+document.getElementById("padWidth").value=p[2]
+document.getElementById("padVelocity").value=p[3]
 }
 
 function calculate(){
@@ -109,10 +113,11 @@ let pads = Math.ceil(padArea / padUnit)
 let heaters = Math.ceil(L/30)
 let acf = heaters
 
-calc = {houses,feeding,drinking,fans,pads,heaters,acf}
+calc = {houses,feeding,drinking,fans,pads,heaters,acf,cross,airflow}
 
-results.innerHTML = `
+document.getElementById("results").innerHTML = `
 Cross Section: ${cross.toFixed(2)} m²<br>
+Airflow: ${Math.round(airflow)} m³/h<br>
 Fans: ${fans}<br>
 Pads: ${pads}<br>
 Heaters: ${heaters}<br>
@@ -123,11 +128,11 @@ ACF Fans: ${acf}
 function addItems(){
 
 items = [
-{name:"Feeding",qty:calc.feeding*calc.houses},
-{name:"Drinking",qty:calc.drinking*calc.houses},
-{name:"Fans",qty:calc.fans*calc.houses},
+{name:"Feeding System",qty:calc.feeding*calc.houses},
+{name:"Drinking System",qty:calc.drinking*calc.houses},
+{name:"Ventilation Fans",qty:calc.fans*calc.houses},
 {name:"Cooling Pads",qty:calc.pads*calc.houses},
-{name:"Heaters",qty:calc.heaters*calc.houses},
+{name:"Heating System",qty:calc.heaters*calc.houses},
 {name:"ACF Fans",qty:calc.acf*calc.houses}
 ]
 
@@ -135,9 +140,10 @@ render()
 }
 
 function render(){
-itemsDiv.innerHTML=""
+let div = document.getElementById("items")
+div.innerHTML=""
 items.forEach(i=>{
-itemsDiv.innerHTML+=`
+div.innerHTML+=`
 <div class="item">
 <b>${i.name}</b><br>
 Qty: ${i.qty}
