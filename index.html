@@ -15,7 +15,7 @@ main{max-width:1200px;margin:auto;padding:24px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 label{font-weight:bold;font-size:14px}
 input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
-textarea{min-height:80px}
+textarea{min-height:100px}
 button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:bold;margin:4px}
 .primary{background:#111827;color:white}
 .green{background:#15803d;color:white}
@@ -45,9 +45,10 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <h2>Project Data</h2>
 <div class="grid">
 <label>Quotation Language
-<select id="language">
+<select id="language" onchange="loadDefaultTerms()">
 <option value="en">English</option>
 <option value="ar">العربية</option>
+<option value="fr">Français</option>
 </select>
 </label>
 
@@ -69,7 +70,6 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <label>Side Ventilation Airflow % of Tunnel Airflow
 <input id="sideVentPercent" type="number" value="25">
 </label>
-
 <label>Side Fan Capacity (m³/h)
 <input id="sideFanCapacity" type="number" value="22000">
 </label>
@@ -82,11 +82,9 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <label>Lamps per House
 <input id="lampsPerHouse" type="number" value="90">
 </label>
-
 <label>Lamps per Line
 <input id="lampsPerLine" type="number" value="45">
 </label>
-
 <label>Lines per Power Pack
 <input id="linesPerPowerPack" type="number" value="2">
 </label>
@@ -105,12 +103,22 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <option value="custom">Custom</option>
 </select>
 </label>
-
 <label>Pad Thickness (m)<input id="padThickness" type="number" value="0.15" step="0.01"></label>
 <label>Pad Height (m)<input id="padHeight" type="number" value="1.5" step="0.1"></label>
 <label>Pad Width (m)<input id="padWidth" type="number" value="0.6" step="0.1"></label>
 <label>Pad Face Velocity (m/s)<input id="padVelocity" type="number" value="1.75" step="0.05"></label>
 </div>
+</section>
+
+<section class="card">
+<h2>Editable Terms & Conditions</h2>
+<label>Terms and Conditions
+<textarea id="termsConditions"></textarea>
+</label>
+<label>Offer Exclusions / Not Included
+<textarea id="exclusions"></textarea>
+</label>
+<button class="blue" onclick="loadDefaultTerms()">Reload Default Terms for Selected Language</button>
 </section>
 
 <section class="card">
@@ -182,6 +190,8 @@ const terms = {
     subtotal:"Subtotal",
     discount:"Special Discount",
     grandTotal:"Grand Total",
+    termsTitle:"Terms and Conditions",
+    exclusionsTitle:"Offer Does Not Include",
 
     feeding:"Automatic Feeding System",
     feedingDesc:"ROXELL NEW MiniMax automatic pan feeding system including suspension and lifting system, galvanized pipes, 4 pans per pipe, polyethylene pans resistant to disinfectants and detergents, 14 feeding openings per pan, auger spring, ON/OFF protection switch, operating sensors, feed hoppers and drive motors.",
@@ -205,13 +215,19 @@ const terms = {
     acfDesc:"Pericoli ACF21 air circulation fans. One ACF fan after each heater position, based on 30 meter spacing.",
 
     lighting:"Lighting System",
-    lightingDesc:"Lighting system including poultry lamps and power packs. Power pack calculation is based on maximum 2 lines per power pack and 45 lamps per line.",
+    lightingDesc:"Lighting system including poultry lamps. Power pack calculation is based on maximum 2 lines per power pack and 45 lamps per line.",
+
+    powerPacks:"Lighting Power Packs",
+    powerPacksDesc:"Lighting power packs calculated according to number of lamps, maximum lamps per line and maximum lines per power pack.",
 
     control:"Control System",
     controlDesc:"Main poultry climate control system for ventilation, cooling, heating, lighting, alarms and sensors.",
 
     installation:"Installation",
-    installationDesc:"Installation of supplied equipment inside the broiler house."
+    installationDesc:"Installation of supplied equipment inside the broiler house.",
+
+    defaultTerms:"1. Prices include VAT 14%.\n2. Delivery to your farm.\n3. Delivery dates according to agreement for each item separately.\n4. Payment terms: 50% advance payment, 40% upon supply, 10% upon installation.\n5. Offer validity is 30 days from quotation date.",
+    defaultExclusions:"- Electrical cables and cable installation.\n- Any civil works or concrete works unless clearly stated.\n- Any items not mentioned in this quotation."
   },
 
   ar: {
@@ -226,6 +242,8 @@ const terms = {
     subtotal:"الإجمالي قبل الخصم",
     discount:"خصم خاص",
     grandTotal:"الإجمالي بعد الخصم",
+    termsTitle:"الاشتراطات العامة",
+    exclusionsTitle:"العرض لا يشمل",
 
     feeding:"نظام التغذية الأوتوماتيكية",
     feedingDesc:"نظام التغذية الأوتوماتيكية ROXELL NEW MiniMax بان فيدر، شامل نظام التعليق والرفع، مواسير مجلفنة، كل ماسورة مزودة بعدد 4 أطباق بلاستيك مصنوعة من مادة البولي إيثيلين ومقاومة للمطهرات والمنظفات، الطبق 14 فتحة، شامل الأوجر السوستة الحلزونية، مفتاح تشغيل وحماية ON/OFF، حساسات التشغيل، حلل ملء العلف وبوادئ ونهايات الخطوط مع مواتير التشغيل.",
@@ -249,13 +267,71 @@ const terms = {
     acfDesc:"مراوح توزيع الهواء Pericoli ACF21. يتم حساب مروحة ACF بعد كل هيتر طبقاً لمسافة 30 متر.",
 
     lighting:"نظام الإضاءة",
-    lightingDesc:"نظام الإضاءة شامل لمبات الدواجن ووحدات الباور. يتم حساب وحدة الباور على أساس حد أقصى خطين لكل باور باك و45 لمبة لكل خط.",
+    lightingDesc:"نظام الإضاءة شامل لمبات الدواجن. يتم حساب وحدة الباور على أساس حد أقصى خطين لكل باور باك و45 لمبة لكل خط.",
+
+    powerPacks:"وحدات باور الإضاءة",
+    powerPacksDesc:"وحدات باور لنظام الإضاءة محسوبة طبقاً لعدد اللمبات والحد الأقصى لكل خط ولكل باور باك.",
 
     control:"نظام لوحة التحكم",
     controlDesc:"نظام لوحة تحكم رئيسية للتحكم في التهوية والتبريد والتدفئة والإضاءة والإنذارات والحساسات.",
 
     installation:"التركيبات",
-    installationDesc:"تركيب المعدات الموردة داخل عنبر التسمين."
+    installationDesc:"تركيب المعدات الموردة داخل عنبر التسمين.",
+
+    defaultTerms:"1. الأسعار أعلاه شاملة ضريبة القيمة المضافة 14%.\n2. التسليم مزارعكم.\n3. مواعيد التسليم طبقاً للاتفاق لكل بند على حدة.\n4. نظام الدفع: 50% دفعة مقدمة، 40% عند التوريد، 10% عند التركيب.\n5. مدة الارتباط بالعرض 30 يوم من تاريخ العرض.",
+    defaultExclusions:"- الكابلات الكهربائية وتركيبها.\n- أي أعمال مدنية أو خرسانية ما لم يتم ذكرها صراحة.\n- أي بنود غير مذكورة في عرض السعر."
+  },
+
+  fr: {
+    quotation:"Devis",
+    client:"Client",
+    company:"Société",
+    item:"Article",
+    qty:"Quantité",
+    unit:"Unité",
+    unitPrice:"Prix unitaire",
+    totalPrice:"Valeur totale",
+    subtotal:"Sous-total",
+    discount:"Remise spéciale",
+    grandTotal:"Total net",
+    termsTitle:"Conditions générales",
+    exclusionsTitle:"Le devis ne comprend pas",
+
+    feeding:"Système d’alimentation automatique",
+    feedingDesc:"Système d’alimentation automatique ROXELL NEW MiniMax, type pan feeder, comprenant système de suspension et de levage, tubes galvanisés, 4 assiettes par tube, assiettes en polyéthylène résistantes aux désinfectants et détergents, 14 ouvertures par assiette, vis sans fin, interrupteur de protection ON/OFF, capteurs de fonctionnement, trémies d’alimentation et moteurs d’entraînement.",
+
+    drinking:"Système d’abreuvement automatique",
+    drinkingDesc:"Système d’abreuvement automatique ROXELL à pipettes, composé de tubes PVC lisses et opaques, chaque tube équipé de 15 pipettes en acier inoxydable avec revêtement plastique anticorrosion, raccords flexibles, colliers inox, coupelles, régulateurs de pression, ensembles de fin de ligne et accessoires de suspension par treuil de plafond.",
+
+    tunnelVent:"Système de ventilation tunnel",
+    tunnelVentDesc:"Ventilateurs de ventilation tunnel calculés selon les dimensions du bâtiment, la hauteur du faîtage, la vitesse d’air cible et le débit du ventilateur sélectionné.",
+
+    sideVent:"Ventilateurs de ventilation latérale",
+    sideVentDesc:"Ventilateurs de ventilation latérale calculés comme pourcentage du débit d’air tunnel total, avec débit du ventilateur latéral modifiable.",
+
+    cooling:"Panneaux de refroidissement",
+    coolingDesc:"Système de panneaux de refroidissement calculé selon le débit d’air requis, la taille du panneau, son épaisseur et la vitesse frontale.",
+
+    heating:"Système de chauffage",
+    heatingDesc:"Système de chauffage Pericoli 140E. Un chauffage tous les 30 mètres de longueur du bâtiment.",
+
+    acf:"Ventilateurs de brassage d’air ACF21",
+    acfDesc:"Ventilateurs de brassage d’air Pericoli ACF21. Un ventilateur ACF après chaque position de chauffage, selon un espacement de 30 mètres.",
+
+    lighting:"Système d’éclairage",
+    lightingDesc:"Système d’éclairage comprenant lampes avicoles. Le calcul des blocs d’alimentation est basé sur un maximum de 2 lignes par bloc et 45 lampes par ligne.",
+
+    powerPacks:"Blocs d’alimentation éclairage",
+    powerPacksDesc:"Blocs d’alimentation calculés selon le nombre de lampes, le maximum de lampes par ligne et le maximum de lignes par bloc.",
+
+    control:"Système de contrôle",
+    controlDesc:"Système principal de contrôle pour ventilation, refroidissement, chauffage, éclairage, alarmes et capteurs.",
+
+    installation:"Installation",
+    installationDesc:"Installation des équipements fournis dans le bâtiment de poulets de chair.",
+
+    defaultTerms:"1. Les prix incluent la TVA 14%.\n2. Livraison à votre ferme.\n3. Délais de livraison selon accord pour chaque article séparément.\n4. Conditions de paiement : 50% acompte, 40% à la fourniture, 10% à l’installation.\n5. Validité de l’offre : 30 jours à partir de la date du devis.",
+    defaultExclusions:"- Câbles électriques et installation des câbles.\n- Travaux civils ou béton sauf mention explicite.\n- Tout article non mentionné dans ce devis."
   }
 };
 
@@ -278,6 +354,11 @@ function safeText(text){
     .replaceAll(">","&gt;")
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
+}
+
+function loadDefaultTerms(){
+  document.getElementById("termsConditions").value = tr("defaultTerms");
+  document.getElementById("exclusions").value = tr("defaultExclusions");
 }
 
 function applyPadPreset(){
@@ -375,7 +456,6 @@ function calculate(){
     <p>Feeding Lines per House: <strong>${feedingLinesPerHouse}</strong></p>
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
     <p>Cooling Pad Required Area: <strong>${padArea.toFixed(2)} m²</strong></p>
-    <p>Single Pad Area: <strong>${singlePadArea.toFixed(2)} m²</strong></p>
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
     <p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
     <p>ACF21 Fans per House: <strong>${acfFansPerHouse}</strong></p>
@@ -388,101 +468,24 @@ function addCalculatedItems(){
   if(!calculation.houses) calculate();
 
   items = [
-    {
-      include:true,
-      name:tr("feeding"),
-      description:tr("feedingDesc"),
-      qty:calculation.feedingLinesPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "خطوط" : "lines",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("drinking"),
-      description:tr("drinkingDesc"),
-      qty:calculation.drinkingLinesPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "خطوط" : "lines",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("tunnelVent"),
-      description:tr("tunnelVentDesc"),
-      qty:calculation.fansPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "شفاط" : "fans",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("sideVent"),
-      description:tr("sideVentDesc"),
-      qty:calculation.sideFansPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "شفاط" : "fans",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("cooling"),
-      description:`${tr("coolingDesc")} ${lang()==="ar" ? "السمك" : "Thickness"}: ${calculation.padThickness} m, ${lang()==="ar" ? "المقاس" : "size"}: ${calculation.padHeight} m × ${calculation.padWidth} m, ${lang()==="ar" ? "سرعة الهواء" : "face velocity"}: ${calculation.padVelocity} m/s.`,
-      qty:calculation.coolingPadsPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "لوح" : "panels",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("heating"),
-      description:tr("heatingDesc"),
-      qty:calculation.heatersPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "هيتر" : "heaters",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("acf"),
-      description:tr("acfDesc"),
-      qty:calculation.acfFansPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "مروحة" : "fans",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("lighting"),
-      description:tr("lightingDesc"),
-      qty:calculation.lampsTotalPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "لمبة" : "lamps",
-      price:0
-    },
-    {
-      include:true,
-      name: lang() === "ar" ? "وحدات باور الإضاءة" : "Lighting Power Packs",
-      description: lang() === "ar" ? "وحدات باور لنظام الإضاءة محسوبة طبقاً لعدد اللمبات والحد الأقصى لكل خط ولكل باور باك." : "Lighting power packs calculated according to number of lamps, maximum lamps per line and maximum lines per power pack.",
-      qty:calculation.powerPacksPerHouse * calculation.houses,
-      unit: lang() === "ar" ? "باور باك" : "power packs",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("control"),
-      description:tr("controlDesc"),
-      qty:calculation.houses,
-      unit: lang() === "ar" ? "لوحة" : "panels",
-      price:0
-    },
-    {
-      include:true,
-      name:tr("installation"),
-      description:tr("installationDesc"),
-      qty:calculation.houses,
-      unit: lang() === "ar" ? "عنبر" : "houses",
-      price:0
-    }
+    {include:true,name:tr("feeding"),description:tr("feedingDesc"),qty:calculation.feedingLinesPerHouse*calculation.houses,unit:lang()==="ar"?"خطوط":"lines",price:0},
+    {include:true,name:tr("drinking"),description:tr("drinkingDesc"),qty:calculation.drinkingLinesPerHouse*calculation.houses,unit:lang()==="ar"?"خطوط":"lines",price:0},
+    {include:true,name:tr("tunnelVent"),description:tr("tunnelVentDesc"),qty:calculation.fansPerHouse*calculation.houses,unit:lang()==="ar"?"شفاط":"fans",price:0},
+    {include:true,name:tr("sideVent"),description:tr("sideVentDesc"),qty:calculation.sideFansPerHouse*calculation.houses,unit:lang()==="ar"?"شفاط":"fans",price:0},
+    {include:true,name:tr("cooling"),description:`${tr("coolingDesc")} ${lang()==="ar"?"السمك":"Thickness"}: ${calculation.padThickness} m, ${lang()==="ar"?"المقاس":"Size"}: ${calculation.padHeight} m × ${calculation.padWidth} m, ${lang()==="ar"?"سرعة الهواء":"Face velocity"}: ${calculation.padVelocity} m/s.`,qty:calculation.coolingPadsPerHouse*calculation.houses,unit:lang()==="ar"?"لوح":"panels",price:0},
+    {include:true,name:tr("heating"),description:tr("heatingDesc"),qty:calculation.heatersPerHouse*calculation.houses,unit:lang()==="ar"?"هيتر":"heaters",price:0},
+    {include:true,name:tr("acf"),description:tr("acfDesc"),qty:calculation.acfFansPerHouse*calculation.houses,unit:lang()==="ar"?"مروحة":"fans",price:0},
+    {include:true,name:tr("lighting"),description:tr("lightingDesc"),qty:calculation.lampsTotalPerHouse*calculation.houses,unit:lang()==="ar"?"لمبة":"lamps",price:0},
+    {include:true,name:tr("powerPacks"),description:tr("powerPacksDesc"),qty:calculation.powerPacksPerHouse*calculation.houses,unit:lang()==="ar"?"باور باك":"power packs",price:0},
+    {include:true,name:tr("control"),description:tr("controlDesc"),qty:calculation.houses,unit:lang()==="ar"?"لوحة":"panels",price:0},
+    {include:true,name:tr("installation"),description:tr("installationDesc"),qty:calculation.houses,unit:lang()==="ar"?"عنبر":"houses",price:0}
   ];
 
   renderItems();
 }
 
 function addCustomItem(){
-  items.push({include:true,name:"",description:"",qty:1,unit:"unit",price:0});
+  items.push({include:true,name:"",description:"",qty:1,unit:lang()==="ar"?"وحدة":"unit",price:0});
   renderItems();
 }
 
@@ -554,6 +557,8 @@ function buildQuoteHTML(){
   const discount = getNumber("discount");
   const direction = lang() === "ar" ? "rtl" : "ltr";
   const textAlign = lang() === "ar" ? "right" : "left";
+  const termsText = safeText(document.getElementById("termsConditions").value).replaceAll("\n","<br>");
+  const exclusionsText = safeText(document.getElementById("exclusions").value).replaceAll("\n","<br>");
 
   let subtotal = 0;
   let rows = "";
@@ -587,6 +592,7 @@ function buildQuoteHTML(){
         th,td{border:1px solid #ccc;padding:10px;text-align:center;vertical-align:top}
         td:first-child,th:first-child{text-align:${textAlign}}
         .total{margin-top:20px;font-size:18px;text-align:${lang()==="ar" ? "left" : "right"}}
+        .terms{margin-top:30px;line-height:1.7}
       </style>
     </head>
     <body>
@@ -610,6 +616,13 @@ function buildQuoteHTML(){
         <p>${tr("subtotal")}: ${subtotal.toLocaleString()} EGP</p>
         <p>${tr("discount")}: ${discount.toLocaleString()} EGP</p>
         <h2>${tr("grandTotal")}: ${grandTotal.toLocaleString()} EGP</h2>
+      </div>
+
+      <div class="terms">
+        <h3>${tr("termsTitle")}</h3>
+        <p>${termsText}</p>
+        <h3>${tr("exclusionsTitle")}</h3>
+        <p>${exclusionsText}</p>
       </div>
     </body>
     </html>
@@ -639,7 +652,9 @@ function saveQuotation(){
     date:new Date().toLocaleString(),
     items:JSON.parse(JSON.stringify(items)),
     discount:document.getElementById("discount").value,
-    language:lang()
+    language:lang(),
+    terms:document.getElementById("termsConditions").value,
+    exclusions:document.getElementById("exclusions").value
   };
 
   savedQuotes.unshift(quote);
@@ -655,6 +670,8 @@ function loadQuotation(id){
   document.getElementById("clientName").value = quote.client;
   document.getElementById("discount").value = quote.discount || 0;
   document.getElementById("language").value = quote.language || "en";
+  document.getElementById("termsConditions").value = quote.terms || tr("defaultTerms");
+  document.getElementById("exclusions").value = quote.exclusions || tr("defaultExclusions");
   items = quote.items || [];
   renderItems();
 }
@@ -694,6 +711,7 @@ function renderSavedQuotes(){
   `;
 }
 
+loadDefaultTerms();
 renderSavedQuotes();
 </script>
 
