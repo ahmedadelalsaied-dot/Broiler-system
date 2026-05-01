@@ -44,6 +44,13 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <section class="card">
 <h2>Project Data</h2>
 <div class="grid">
+<label>Quotation Language
+<select id="language">
+<option value="en">English</option>
+<option value="ar">العربية</option>
+</select>
+</label>
+
 <label>Client Name<input id="clientName" type="text"></label>
 <label>Number of Houses<input id="houses" type="number" value="2"></label>
 <label>Birds per House<input id="birds" type="number" value="40000"></label>
@@ -51,11 +58,39 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <label>House Width (m)<input id="width" type="number" value="14"></label>
 <label>Side Wall Height (m)<input id="height" type="number" value="3"></label>
 <label>Ridge Height (m)<input id="ridge" type="number" value="1"></label>
-<label>Air Speed (m/s)<input id="airSpeed" type="number" value="3"></label>
-<label>Fan Capacity (m³/h)<input id="fanCapacity" type="number" value="44000"></label>
+<label>Tunnel Air Speed (m/s)<input id="airSpeed" type="number" value="3"></label>
+<label>Tunnel Fan Capacity (m³/h)<input id="fanCapacity" type="number" value="44000"></label>
 </div>
-<br>
-<button class="primary" onclick="calculate()">Calculate</button>
+</section>
+
+<section class="card">
+<h2>Side Ventilation</h2>
+<div class="grid">
+<label>Side Ventilation Airflow % of Tunnel Airflow
+<input id="sideVentPercent" type="number" value="25">
+</label>
+
+<label>Side Fan Capacity (m³/h)
+<input id="sideFanCapacity" type="number" value="22000">
+</label>
+</div>
+</section>
+
+<section class="card">
+<h2>Lighting</h2>
+<div class="grid">
+<label>Lamps per House
+<input id="lampsPerHouse" type="number" value="90">
+</label>
+
+<label>Lamps per Line
+<input id="lampsPerLine" type="number" value="45">
+</label>
+
+<label>Lines per Power Pack
+<input id="linesPerPowerPack" type="number" value="2">
+</label>
+</div>
 </section>
 
 <section class="card">
@@ -66,15 +101,20 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <option value="150-1.5-0.6-1.75">150mm - 1.5 × 0.6m - 1.75 m/s</option>
 <option value="150-1.8-0.6-1.75">150mm - 1.8 × 0.6m - 1.75 m/s</option>
 <option value="150-1.5-0.3-1.75">150mm - 1.5 × 0.3m - 1.75 m/s</option>
-<option value="100-1.5-0.6-1.5">100mm - 1.5 × 0.6m - 1.5 m/s</option>
+<option value="100-1.5-0.6-1.50">100mm - 1.5 × 0.6m - 1.50 m/s</option>
 <option value="custom">Custom</option>
 </select>
 </label>
+
 <label>Pad Thickness (m)<input id="padThickness" type="number" value="0.15" step="0.01"></label>
 <label>Pad Height (m)<input id="padHeight" type="number" value="1.5" step="0.1"></label>
 <label>Pad Width (m)<input id="padWidth" type="number" value="0.6" step="0.1"></label>
 <label>Pad Face Velocity (m/s)<input id="padVelocity" type="number" value="1.75" step="0.05"></label>
 </div>
+</section>
+
+<section class="card">
+<button class="primary" onclick="calculate()">Calculate</button>
 </section>
 
 <section class="card">
@@ -116,7 +156,6 @@ const logoFallbacks = [
   "https://www.unelsaid.com/images/logo.png",
   "https://unelsaid.com/images/Logo.png",
   "https://www.unelsaid.com/images/Logo.png",
-  "https://unelsaid.com/images/Logo-footer.png",
   "utc-logo.png"
 ];
 let logoIndex = 0;
@@ -129,6 +168,104 @@ logo.onerror = function(){
 let calculation = {};
 let items = [];
 let savedQuotes = JSON.parse(localStorage.getItem("savedQuotes") || "[]");
+
+const terms = {
+  en: {
+    quotation:"Quotation",
+    client:"Client",
+    company:"Company",
+    item:"Item",
+    qty:"Qty",
+    unit:"Unit",
+    unitPrice:"Unit Price",
+    totalPrice:"Total Price",
+    subtotal:"Subtotal",
+    discount:"Special Discount",
+    grandTotal:"Grand Total",
+
+    feeding:"Automatic Feeding System",
+    feedingDesc:"ROXELL NEW MiniMax automatic pan feeding system including suspension and lifting system, galvanized pipes, 4 pans per pipe, polyethylene pans resistant to disinfectants and detergents, 14 feeding openings per pan, auger spring, ON/OFF protection switch, operating sensors, feed hoppers and drive motors.",
+
+    drinking:"Automatic Drinking System",
+    drinkingDesc:"ROXELL automatic nipple drinking system including smooth non-transparent PVC pipes, 15 stainless steel nipples per pipe with plastic coating for rust protection, flexible pipe connections, stainless clamps, cups, pressure regulators, end-line sets and ceiling suspension accessories.",
+
+    tunnelVent:"Tunnel Ventilation Fans",
+    tunnelVentDesc:"Tunnel ventilation fans calculated according to house dimensions, ridge height, target tunnel air speed and selected fan capacity.",
+
+    sideVent:"Side Ventilation Fans",
+    sideVentDesc:"Side ventilation fans calculated as a percentage of total tunnel airflow, with editable side fan capacity.",
+
+    cooling:"Cooling Pads",
+    coolingDesc:"Cooling pad system calculated according to required airflow, selected pad size, thickness and pad face velocity.",
+
+    heating:"Heating System",
+    heatingDesc:"Pericoli 140E heater system. One heater every 30 meters of house length.",
+
+    acf:"ACF21 Air Circulation Fans",
+    acfDesc:"Pericoli ACF21 air circulation fans. One ACF fan after each heater position, based on 30 meter spacing.",
+
+    lighting:"Lighting System",
+    lightingDesc:"Lighting system including poultry lamps and power packs. Power pack calculation is based on maximum 2 lines per power pack and 45 lamps per line.",
+
+    control:"Control System",
+    controlDesc:"Main poultry climate control system for ventilation, cooling, heating, lighting, alarms and sensors.",
+
+    installation:"Installation",
+    installationDesc:"Installation of supplied equipment inside the broiler house."
+  },
+
+  ar: {
+    quotation:"عرض سعر",
+    client:"العميل",
+    company:"الشركة",
+    item:"البند",
+    qty:"الكمية",
+    unit:"الوحدة",
+    unitPrice:"سعر الوحدة",
+    totalPrice:"القيمة الإجمالية",
+    subtotal:"الإجمالي قبل الخصم",
+    discount:"خصم خاص",
+    grandTotal:"الإجمالي بعد الخصم",
+
+    feeding:"نظام التغذية الأوتوماتيكية",
+    feedingDesc:"نظام التغذية الأوتوماتيكية ROXELL NEW MiniMax بان فيدر، شامل نظام التعليق والرفع، مواسير مجلفنة، كل ماسورة مزودة بعدد 4 أطباق بلاستيك مصنوعة من مادة البولي إيثيلين ومقاومة للمطهرات والمنظفات، الطبق 14 فتحة، شامل الأوجر السوستة الحلزونية، مفتاح تشغيل وحماية ON/OFF، حساسات التشغيل، حلل ملء العلف وبوادئ ونهايات الخطوط مع مواتير التشغيل.",
+
+    drinking:"نظام الشرب الأوتوماتيك",
+    drinkingDesc:"نظام الشرب الأوتوماتيك ROXELL نبل، مكون من مواسير PVC ملساء غير شفافة، كل ماسورة مزودة بعدد 15 نبل استانلس مغطى بطبقة بلاستيك لمقاومة الصدأ، شامل وصلات مرنة بين المواسير، أفيزات استانلس، كبات، منظمات ضغط، مجموعات نهاية الخط وإكسسوارات التعليق بالونش السقفي.",
+
+    tunnelVent:"نظام التهوية النفقية",
+    tunnelVentDesc:"شفاطات التهوية النفقية محسوبة طبقاً لأبعاد العنبر وارتفاع الجمالون وسرعة الهواء المطلوبة وسعة الشفاط المختارة.",
+
+    sideVent:"نظام التهوية الجانبية",
+    sideVentDesc:"شفاطات التهوية الجانبية محسوبة كنسبة من إجمالي كمية هواء التهوية النفقية، مع إمكانية تعديل سعة شفاط التهوية الجانبية.",
+
+    cooling:"خلايا التبريد",
+    coolingDesc:"نظام خلايا التبريد محسوب طبقاً لكمية الهواء المطلوبة ومقاس الخلية وسمك الخلية وسرعة مرور الهواء خلال الخلايا.",
+
+    heating:"نظام التدفئة",
+    heatingDesc:"نظام تدفئة Pericoli 140E. يتم حساب هيتر واحد كل 30 متر من طول العنبر.",
+
+    acf:"مراوح توزيع الهواء ACF21",
+    acfDesc:"مراوح توزيع الهواء Pericoli ACF21. يتم حساب مروحة ACF بعد كل هيتر طبقاً لمسافة 30 متر.",
+
+    lighting:"نظام الإضاءة",
+    lightingDesc:"نظام الإضاءة شامل لمبات الدواجن ووحدات الباور. يتم حساب وحدة الباور على أساس حد أقصى خطين لكل باور باك و45 لمبة لكل خط.",
+
+    control:"نظام لوحة التحكم",
+    controlDesc:"نظام لوحة تحكم رئيسية للتحكم في التهوية والتبريد والتدفئة والإضاءة والإنذارات والحساسات.",
+
+    installation:"التركيبات",
+    installationDesc:"تركيب المعدات الموردة داخل عنبر التسمين."
+  }
+};
+
+function lang(){
+  return document.getElementById("language").value || "en";
+}
+
+function tr(key){
+  return terms[lang()][key] || terms.en[key] || key;
+}
 
 function getNumber(id){
   return Number(document.getElementById(id).value) || 0;
@@ -164,6 +301,13 @@ function calculate(){
   const airSpeed = getNumber("airSpeed");
   const fanCapacity = getNumber("fanCapacity");
 
+  const sideVentPercent = getNumber("sideVentPercent");
+  const sideFanCapacity = getNumber("sideFanCapacity");
+
+  const lampsPerHouse = getNumber("lampsPerHouse");
+  const lampsPerLine = getNumber("lampsPerLine");
+  const linesPerPowerPack = getNumber("linesPerPowerPack");
+
   const padThickness = getNumber("padThickness");
   const padHeight = getNumber("padHeight");
   const padWidth = getNumber("padWidth");
@@ -175,6 +319,9 @@ function calculate(){
 
   const requiredAirflow = crossSection * airSpeed * 3600;
   const fansPerHouse = fanCapacity > 0 ? Math.ceil(requiredAirflow / fanCapacity) : 0;
+
+  const sideVentAirflow = requiredAirflow * (sideVentPercent / 100);
+  const sideFansPerHouse = sideFanCapacity > 0 ? Math.ceil(sideVentAirflow / sideFanCapacity) : 0;
 
   const lineLength = Math.max(length - 4, 0);
   const pipesPerLine = Math.ceil(lineLength / 3);
@@ -189,6 +336,10 @@ function calculate(){
   const heatersPerHouse = Math.ceil(length / 30);
   const acfFansPerHouse = heatersPerHouse;
 
+  const lampsTotalPerHouse = lampsPerHouse;
+  const lampsPerPowerPack = lampsPerLine * linesPerPowerPack;
+  const powerPacksPerHouse = lampsPerPowerPack > 0 ? Math.ceil(lampsTotalPerHouse / lampsPerPowerPack) : 0;
+
   calculation = {
     houses,
     rectangleArea,
@@ -196,6 +347,8 @@ function calculate(){
     crossSection,
     requiredAirflow,
     fansPerHouse,
+    sideVentAirflow,
+    sideFansPerHouse,
     feedingLinesPerHouse,
     drinkingLinesPerHouse,
     padArea,
@@ -203,6 +356,8 @@ function calculate(){
     coolingPadsPerHouse,
     heatersPerHouse,
     acfFansPerHouse,
+    lampsTotalPerHouse,
+    powerPacksPerHouse,
     padThickness,
     padHeight,
     padWidth,
@@ -213,8 +368,10 @@ function calculate(){
     <p>Rectangle Area: <strong>${rectangleArea.toFixed(2)} m²</strong></p>
     <p>Roof Triangle Area: <strong>${roofTriangleArea.toFixed(2)} m²</strong></p>
     <p>Total Cross Section Area: <strong>${crossSection.toFixed(2)} m²</strong></p>
-    <p>Required Airflow: <strong>${Math.round(requiredAirflow).toLocaleString()} m³/h</strong></p>
-    <p>Fans per House: <strong>${fansPerHouse}</strong></p>
+    <p>Required Tunnel Airflow: <strong>${Math.round(requiredAirflow).toLocaleString()} m³/h</strong></p>
+    <p>Tunnel Fans per House: <strong>${fansPerHouse}</strong></p>
+    <p>Side Ventilation Airflow: <strong>${Math.round(sideVentAirflow).toLocaleString()} m³/h</strong></p>
+    <p>Side Ventilation Fans per House: <strong>${sideFansPerHouse}</strong></p>
     <p>Feeding Lines per House: <strong>${feedingLinesPerHouse}</strong></p>
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
     <p>Cooling Pad Required Area: <strong>${padArea.toFixed(2)} m²</strong></p>
@@ -222,6 +379,8 @@ function calculate(){
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
     <p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
     <p>ACF21 Fans per House: <strong>${acfFansPerHouse}</strong></p>
+    <p>Lamps per House: <strong>${lampsTotalPerHouse}</strong></p>
+    <p>Power Packs per House: <strong>${powerPacksPerHouse}</strong></p>
   `;
 }
 
@@ -231,66 +390,90 @@ function addCalculatedItems(){
   items = [
     {
       include:true,
-      name:"Automatic Feeding System",
-      description:"Automatic feeding system (pan feeder) ROXELL NEW MiniMax including suspension system, galvanized pipes, 4 pans per pipe, 14 feeding openings per pan, auger spring, control sensors, feed hoppers and drive motors.",
+      name:tr("feeding"),
+      description:tr("feedingDesc"),
       qty:calculation.feedingLinesPerHouse * calculation.houses,
-      unit:"lines",
+      unit: lang() === "ar" ? "خطوط" : "lines",
       price:0
     },
     {
       include:true,
-      name:"Automatic Drinking System",
-      description:"Automatic nipple drinking system ROXELL including PVC pipes, 15 nipples per pipe, stainless steel nipples, cups, regulators, suspension system, clamps and end-line accessories.",
+      name:tr("drinking"),
+      description:tr("drinkingDesc"),
       qty:calculation.drinkingLinesPerHouse * calculation.houses,
-      unit:"lines",
+      unit: lang() === "ar" ? "خطوط" : "lines",
       price:0
     },
     {
       include:true,
-      name:"Tunnel Ventilation Fans",
-      description:"Tunnel ventilation fans calculated according to house dimensions, ridge height, air speed and fan capacity.",
+      name:tr("tunnelVent"),
+      description:tr("tunnelVentDesc"),
       qty:calculation.fansPerHouse * calculation.houses,
-      unit:"fans",
+      unit: lang() === "ar" ? "شفاط" : "fans",
       price:0
     },
     {
       include:true,
-      name:"Cooling Pads",
-      description:`Cooling pad system. Thickness: ${calculation.padThickness} m, size: ${calculation.padHeight} m × ${calculation.padWidth} m, face velocity: ${calculation.padVelocity} m/s.`,
+      name:tr("sideVent"),
+      description:tr("sideVentDesc"),
+      qty:calculation.sideFansPerHouse * calculation.houses,
+      unit: lang() === "ar" ? "شفاط" : "fans",
+      price:0
+    },
+    {
+      include:true,
+      name:tr("cooling"),
+      description:`${tr("coolingDesc")} ${lang()==="ar" ? "السمك" : "Thickness"}: ${calculation.padThickness} m, ${lang()==="ar" ? "المقاس" : "size"}: ${calculation.padHeight} m × ${calculation.padWidth} m, ${lang()==="ar" ? "سرعة الهواء" : "face velocity"}: ${calculation.padVelocity} m/s.`,
       qty:calculation.coolingPadsPerHouse * calculation.houses,
-      unit:"panels",
+      unit: lang() === "ar" ? "لوح" : "panels",
       price:0
     },
     {
       include:true,
-      name:"Heating System",
-      description:"Pericoli 140E heater system. One heater every 30 meters of house length.",
+      name:tr("heating"),
+      description:tr("heatingDesc"),
       qty:calculation.heatersPerHouse * calculation.houses,
-      unit:"heaters",
+      unit: lang() === "ar" ? "هيتر" : "heaters",
       price:0
     },
     {
       include:true,
-      name:"ACF21 Air Circulation Fans",
-      description:"Pericoli ACF21 air circulation fans. One ACF fan after each heater position, based on 30 meter spacing.",
+      name:tr("acf"),
+      description:tr("acfDesc"),
       qty:calculation.acfFansPerHouse * calculation.houses,
-      unit:"fans",
+      unit: lang() === "ar" ? "مروحة" : "fans",
       price:0
     },
     {
       include:true,
-      name:"Control System",
-      description:"Main poultry climate control system for ventilation, cooling, heating, lighting, alarms and sensors.",
-      qty:calculation.houses,
-      unit:"panels",
+      name:tr("lighting"),
+      description:tr("lightingDesc"),
+      qty:calculation.lampsTotalPerHouse * calculation.houses,
+      unit: lang() === "ar" ? "لمبة" : "lamps",
       price:0
     },
     {
       include:true,
-      name:"Installation",
-      description:"Installation of supplied equipment inside the broiler house.",
+      name: lang() === "ar" ? "وحدات باور الإضاءة" : "Lighting Power Packs",
+      description: lang() === "ar" ? "وحدات باور لنظام الإضاءة محسوبة طبقاً لعدد اللمبات والحد الأقصى لكل خط ولكل باور باك." : "Lighting power packs calculated according to number of lamps, maximum lamps per line and maximum lines per power pack.",
+      qty:calculation.powerPacksPerHouse * calculation.houses,
+      unit: lang() === "ar" ? "باور باك" : "power packs",
+      price:0
+    },
+    {
+      include:true,
+      name:tr("control"),
+      description:tr("controlDesc"),
       qty:calculation.houses,
-      unit:"houses",
+      unit: lang() === "ar" ? "لوحة" : "panels",
+      price:0
+    },
+    {
+      include:true,
+      name:tr("installation"),
+      description:tr("installationDesc"),
+      qty:calculation.houses,
+      unit: lang() === "ar" ? "عنبر" : "houses",
       price:0
     }
   ];
@@ -369,6 +552,8 @@ function renderItems(){
 function buildQuoteHTML(){
   const client = document.getElementById("clientName").value || "Client";
   const discount = getNumber("discount");
+  const direction = lang() === "ar" ? "rtl" : "ltr";
+  const textAlign = lang() === "ar" ? "right" : "left";
 
   let subtotal = 0;
   let rows = "";
@@ -391,36 +576,40 @@ function buildQuoteHTML(){
   const grandTotal = Math.max(subtotal - discount, 0);
 
   return `
-    <html>
+    <html dir="${direction}">
     <head>
-      <title>Quotation</title>
+      <title>${tr("quotation")}</title>
       <style>
-        body{font-family:Arial;padding:30px}
+        body{font-family:Arial;padding:30px;direction:${direction}}
         .logo{width:180px;margin-bottom:20px}
         table{width:100%;border-collapse:collapse;margin-top:20px}
         th{background:#111827;color:white}
         th,td{border:1px solid #ccc;padding:10px;text-align:center;vertical-align:top}
-        td:first-child,th:first-child{text-align:left}
-        .total{margin-top:20px;font-size:18px;text-align:right}
+        td:first-child,th:first-child{text-align:${textAlign}}
+        .total{margin-top:20px;font-size:18px;text-align:${lang()==="ar" ? "left" : "right"}}
       </style>
     </head>
     <body>
       <img class="logo" src="${document.getElementById("utcLogo").src}">
-      <h1>Quotation</h1>
-      <p><strong>Client:</strong> ${safeText(client)}</p>
-      <p><strong>Company:</strong> UTC</p>
+      <h1>${tr("quotation")}</h1>
+      <p><strong>${tr("client")}:</strong> ${safeText(client)}</p>
+      <p><strong>${tr("company")}:</strong> UTC</p>
       <table>
         <thead>
           <tr>
-            <th>Item</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th>Total Price</th>
+            <th>${tr("item")}</th>
+            <th>${tr("qty")}</th>
+            <th>${tr("unit")}</th>
+            <th>${tr("unitPrice")}</th>
+            <th>${tr("totalPrice")}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
       <div class="total">
-        <p>Subtotal: ${subtotal.toLocaleString()} EGP</p>
-        <p>Special Discount: ${discount.toLocaleString()} EGP</p>
-        <h2>Grand Total: ${grandTotal.toLocaleString()} EGP</h2>
+        <p>${tr("subtotal")}: ${subtotal.toLocaleString()} EGP</p>
+        <p>${tr("discount")}: ${discount.toLocaleString()} EGP</p>
+        <h2>${tr("grandTotal")}: ${grandTotal.toLocaleString()} EGP</h2>
       </div>
     </body>
     </html>
@@ -449,7 +638,8 @@ function saveQuotation(){
     client:document.getElementById("clientName").value || "Client",
     date:new Date().toLocaleString(),
     items:JSON.parse(JSON.stringify(items)),
-    discount:document.getElementById("discount").value
+    discount:document.getElementById("discount").value,
+    language:lang()
   };
 
   savedQuotes.unshift(quote);
@@ -464,6 +654,7 @@ function loadQuotation(id){
 
   document.getElementById("clientName").value = quote.client;
   document.getElementById("discount").value = quote.discount || 0;
+  document.getElementById("language").value = quote.language || "en";
   items = quote.items || [];
   renderItems();
 }
