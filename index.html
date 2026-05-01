@@ -5,8 +5,6 @@
 <title>Broiler Quotation System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3bmJodHN4a2pkbXVxcGd2amFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NzczNDUsImV4cCI6MjA5MzE1MzM0NX0.ymuvtKkbqx1gk0KPW6BeKFJhKKLEkvtCoB1jzvAODLU></script>
-
 <style>
 body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#111}
 header{background:#111827;color:white;padding:24px;display:flex;align-items:center;gap:24px}
@@ -25,7 +23,6 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 .red{background:#b91c1c;color:white}
 .item{border:1px solid #ddd;background:#fafafa;border-radius:12px;padding:16px;margin-bottom:14px}
 .totals{background:#eef2f7;padding:16px;border-radius:12px;font-size:18px}
-#app{display:none}
 @media(max-width:800px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
@@ -43,24 +40,6 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 </header>
 
 <main>
-
-<section class="card" id="loginBox">
-  <h2>Company Login</h2>
-  <label>Email
-    <input id="email" type="email" placeholder="Email">
-  </label>
-  <label>Password
-    <input id="password" type="password" placeholder="Password">
-  </label>
-  <button class="primary" onclick="login()">Login</button>
-  <p id="loginStatus"></p>
-</section>
-
-<div id="app">
-
-<section class="card">
-  <button class="red" onclick="logout()">Logout</button>
-</section>
 
 <section class="card">
 <h2>Project Data</h2>
@@ -177,45 +156,9 @@ button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:b
 <div id="savedQuotes"></div>
 </section>
 
-</div>
-
 </main>
 
 <script>
-const supabaseUrl = "https://zwnbhtsxkjdmuqpgvjaa.supabase.co";
-const supabaseAnonKey = "YOUR_ANON_KEY_HERE";
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-async function login(){
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-  if(error){
-    document.getElementById("loginStatus").innerText = error.message;
-    return;
-  }
-
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("app").style.display = "block";
-}
-
-async function logout(){
-  await supabaseClient.auth.signOut();
-  document.getElementById("app").style.display = "none";
-  document.getElementById("loginBox").style.display = "block";
-}
-
-async function checkUser(){
-  const { data } = await supabaseClient.auth.getUser();
-
-  if(data.user){
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  }
-}
-
 const logo = document.getElementById("utcLogo");
 const logoFallbacks = [
   "https://www.unelsaid.com/images/logo.png",
@@ -392,9 +335,17 @@ const terms = {
   }
 };
 
-function lang(){ return document.getElementById("language").value || "en"; }
-function tr(key){ return terms[lang()][key] || terms.en[key] || key; }
-function getNumber(id){ return Number(document.getElementById(id).value) || 0; }
+function lang(){
+  return document.getElementById("language").value || "en";
+}
+
+function tr(key){
+  return terms[lang()][key] || terms.en[key] || key;
+}
+
+function getNumber(id){
+  return Number(document.getElementById(id).value) || 0;
+}
 
 function safeText(text){
   return String(text || "")
@@ -413,6 +364,7 @@ function loadDefaultTerms(){
 function applyPadPreset(){
   const value = document.getElementById("padType").value;
   if(value === "custom") return;
+
   const parts = value.split("-");
   document.getElementById("padThickness").value = Number(parts[0]) / 1000;
   document.getElementById("padHeight").value = parts[1];
@@ -429,11 +381,14 @@ function calculate(){
   const birds = getNumber("birds");
   const airSpeed = getNumber("airSpeed");
   const fanCapacity = getNumber("fanCapacity");
+
   const sideVentPercent = getNumber("sideVentPercent");
   const sideFanCapacity = getNumber("sideFanCapacity");
+
   const lampsPerHouse = getNumber("lampsPerHouse");
   const lampsPerLine = getNumber("lampsPerLine");
   const linesPerPowerPack = getNumber("linesPerPowerPack");
+
   const padThickness = getNumber("padThickness");
   const padHeight = getNumber("padHeight");
   const padWidth = getNumber("padWidth");
@@ -442,41 +397,69 @@ function calculate(){
   const rectangleArea = width * height;
   const roofTriangleArea = (width * ridge) / 2;
   const crossSection = rectangleArea + roofTriangleArea;
+
   const requiredAirflow = crossSection * airSpeed * 3600;
   const fansPerHouse = fanCapacity > 0 ? Math.ceil(requiredAirflow / fanCapacity) : 0;
+
   const sideVentAirflow = requiredAirflow * (sideVentPercent / 100);
   const sideFansPerHouse = sideFanCapacity > 0 ? Math.ceil(sideVentAirflow / sideFanCapacity) : 0;
+
   const lineLength = Math.max(length - 4, 0);
   const pipesPerLine = Math.ceil(lineLength / 3);
+
   const feedingLinesPerHouse = pipesPerLine > 0 ? Math.ceil((birds / 65) / (pipesPerLine * 4)) : 0;
   const drinkingLinesPerHouse = pipesPerLine > 0 ? Math.ceil((birds / 12) / (pipesPerLine * 15)) : 0;
+
   const padArea = padVelocity > 0 ? requiredAirflow / 3600 / padVelocity : 0;
   const singlePadArea = padHeight * padWidth;
   const coolingPadsPerHouse = singlePadArea > 0 ? Math.ceil(padArea / singlePadArea) : 0;
+
   const heatersPerHouse = Math.ceil(length / 30);
   const acfFansPerHouse = heatersPerHouse;
+
+  const lampsTotalPerHouse = lampsPerHouse;
   const lampsPerPowerPack = lampsPerLine * linesPerPowerPack;
-  const powerPacksPerHouse = lampsPerPowerPack > 0 ? Math.ceil(lampsPerHouse / lampsPerPowerPack) : 0;
+  const powerPacksPerHouse = lampsPerPowerPack > 0 ? Math.ceil(lampsTotalPerHouse / lampsPerPowerPack) : 0;
 
   calculation = {
-    houses, rectangleArea, roofTriangleArea, crossSection, requiredAirflow,
-    fansPerHouse, sideVentAirflow, sideFansPerHouse, feedingLinesPerHouse,
-    drinkingLinesPerHouse, padArea, singlePadArea, coolingPadsPerHouse,
-    heatersPerHouse, acfFansPerHouse, lampsTotalPerHouse: lampsPerHouse,
-    powerPacksPerHouse, padThickness, padHeight, padWidth, padVelocity
+    houses,
+    rectangleArea,
+    roofTriangleArea,
+    crossSection,
+    requiredAirflow,
+    fansPerHouse,
+    sideVentAirflow,
+    sideFansPerHouse,
+    feedingLinesPerHouse,
+    drinkingLinesPerHouse,
+    padArea,
+    singlePadArea,
+    coolingPadsPerHouse,
+    heatersPerHouse,
+    acfFansPerHouse,
+    lampsTotalPerHouse,
+    powerPacksPerHouse,
+    padThickness,
+    padHeight,
+    padWidth,
+    padVelocity
   };
 
   document.getElementById("results").innerHTML = `
+    <p>Rectangle Area: <strong>${rectangleArea.toFixed(2)} m²</strong></p>
+    <p>Roof Triangle Area: <strong>${roofTriangleArea.toFixed(2)} m²</strong></p>
+    <p>Total Cross Section Area: <strong>${crossSection.toFixed(2)} m²</strong></p>
     <p>Required Tunnel Airflow: <strong>${Math.round(requiredAirflow).toLocaleString()} m³/h</strong></p>
     <p>Tunnel Fans per House: <strong>${fansPerHouse}</strong></p>
     <p>Side Ventilation Airflow: <strong>${Math.round(sideVentAirflow).toLocaleString()} m³/h</strong></p>
     <p>Side Ventilation Fans per House: <strong>${sideFansPerHouse}</strong></p>
     <p>Feeding Lines per House: <strong>${feedingLinesPerHouse}</strong></p>
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
+    <p>Cooling Pad Required Area: <strong>${padArea.toFixed(2)} m²</strong></p>
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
     <p>Heaters per House: <strong>${heatersPerHouse}</strong></p>
     <p>ACF21 Fans per House: <strong>${acfFansPerHouse}</strong></p>
-    <p>Lamps per House: <strong>${lampsPerHouse}</strong></p>
+    <p>Lamps per House: <strong>${lampsTotalPerHouse}</strong></p>
     <p>Power Packs per House: <strong>${powerPacksPerHouse}</strong></p>
   `;
 }
@@ -489,7 +472,7 @@ function addCalculatedItems(){
     {include:true,name:tr("drinking"),description:tr("drinkingDesc"),qty:calculation.drinkingLinesPerHouse*calculation.houses,unit:lang()==="ar"?"خطوط":"lines",price:0},
     {include:true,name:tr("tunnelVent"),description:tr("tunnelVentDesc"),qty:calculation.fansPerHouse*calculation.houses,unit:lang()==="ar"?"شفاط":"fans",price:0},
     {include:true,name:tr("sideVent"),description:tr("sideVentDesc"),qty:calculation.sideFansPerHouse*calculation.houses,unit:lang()==="ar"?"شفاط":"fans",price:0},
-    {include:true,name:tr("cooling"),description:tr("coolingDesc"),qty:calculation.coolingPadsPerHouse*calculation.houses,unit:lang()==="ar"?"لوح":"panels",price:0},
+    {include:true,name:tr("cooling"),description:`${tr("coolingDesc")} ${lang()==="ar"?"السمك":"Thickness"}: ${calculation.padThickness} m, ${lang()==="ar"?"المقاس":"Size"}: ${calculation.padHeight} m × ${calculation.padWidth} m, ${lang()==="ar"?"سرعة الهواء":"Face velocity"}: ${calculation.padVelocity} m/s.`,qty:calculation.coolingPadsPerHouse*calculation.houses,unit:lang()==="ar"?"لوح":"panels",price:0},
     {include:true,name:tr("heating"),description:tr("heatingDesc"),qty:calculation.heatersPerHouse*calculation.houses,unit:lang()==="ar"?"هيتر":"heaters",price:0},
     {include:true,name:tr("acf"),description:tr("acfDesc"),qty:calculation.acfFansPerHouse*calculation.houses,unit:lang()==="ar"?"مروحة":"fans",price:0},
     {include:true,name:tr("lighting"),description:tr("lightingDesc"),qty:calculation.lampsTotalPerHouse*calculation.houses,unit:lang()==="ar"?"لمبة":"lamps",price:0},
@@ -529,21 +512,42 @@ function renderItems(){
 
     container.innerHTML += `
       <div class="item">
-        <label><input type="checkbox" ${item.include ? "checked" : ""} onchange="updateItem(${index}, 'include', this.checked)"> Include in quotation</label>
+        <label>
+          <input type="checkbox" ${item.include ? "checked" : ""} onchange="updateItem(${index}, 'include', this.checked)">
+          Include in quotation
+        </label>
+
         <div class="grid">
-          <label>Item Name<input value="${safeText(item.name)}" oninput="updateItem(${index}, 'name', this.value)"></label>
-          <label>Quantity<input type="number" value="${item.qty}" oninput="updateItem(${index}, 'qty', this.value)"></label>
-          <label>Unit<input value="${safeText(item.unit)}" oninput="updateItem(${index}, 'unit', this.value)"></label>
-          <label>Unit Price<input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)"></label>
-          <label>Total Price<input value="${total.toLocaleString()} EGP" readonly></label>
+          <label>Item Name
+            <input value="${safeText(item.name)}" oninput="updateItem(${index}, 'name', this.value)">
+          </label>
+          <label>Quantity
+            <input type="number" value="${item.qty}" oninput="updateItem(${index}, 'qty', this.value)">
+          </label>
+          <label>Unit
+            <input value="${safeText(item.unit)}" oninput="updateItem(${index}, 'unit', this.value)">
+          </label>
+          <label>Unit Price
+            <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)">
+          </label>
+          <label>Total Price
+            <input value="${total.toLocaleString()} EGP" readonly>
+          </label>
         </div>
-        <label>Description<textarea oninput="updateItem(${index}, 'description', this.value)">${safeText(item.description)}</textarea></label>
-        <br><button class="red" onclick="removeItem(${index})">Remove Item</button>
-      </div>`;
+
+        <label>Description
+          <textarea oninput="updateItem(${index}, 'description', this.value)">${safeText(item.description)}</textarea>
+        </label>
+
+        <br>
+        <button class="red" onclick="removeItem(${index})">Remove Item</button>
+      </div>
+    `;
   });
 
   const discount = getNumber("discount");
   const grandTotal = Math.max(subtotal - discount, 0);
+
   document.getElementById("subtotal").innerText = subtotal.toLocaleString();
   document.getElementById("grandTotal").innerText = grandTotal.toLocaleString();
 }
@@ -555,24 +559,74 @@ function buildQuoteHTML(){
   const textAlign = lang() === "ar" ? "right" : "left";
   const termsText = safeText(document.getElementById("termsConditions").value).replaceAll("\n","<br>");
   const exclusionsText = safeText(document.getElementById("exclusions").value).replaceAll("\n","<br>");
+
   let subtotal = 0;
   let rows = "";
 
   items.filter(item => item.include).forEach(item=>{
     const total = item.qty * item.price;
     subtotal += total;
-    rows += `<tr><td><strong>${safeText(item.name)}</strong><br>${safeText(item.description)}</td><td>${item.qty}</td><td>${safeText(item.unit)}</td><td>${item.price.toLocaleString()} EGP</td><td>${total.toLocaleString()} EGP</td></tr>`;
+
+    rows += `
+      <tr>
+        <td><strong>${safeText(item.name)}</strong><br>${safeText(item.description)}</td>
+        <td>${item.qty}</td>
+        <td>${safeText(item.unit)}</td>
+        <td>${item.price.toLocaleString()} EGP</td>
+        <td>${total.toLocaleString()} EGP</td>
+      </tr>
+    `;
   });
 
   const grandTotal = Math.max(subtotal - discount, 0);
 
-  return `<html dir="${direction}"><head><title>${tr("quotation")}</title>
-  <style>body{font-family:Arial;padding:30px;direction:${direction}}.logo{width:180px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-top:20px}th{background:#111827;color:white}th,td{border:1px solid #ccc;padding:10px;text-align:center;vertical-align:top}td:first-child,th:first-child{text-align:${textAlign}}.total{margin-top:20px;font-size:18px;text-align:${lang()==="ar"?"left":"right"}}.terms{margin-top:30px;line-height:1.7}</style></head>
-  <body><img class="logo" src="${document.getElementById("utcLogo").src}">
-  <h1>${tr("quotation")}</h1><p><strong>${tr("client")}:</strong> ${safeText(client)}</p><p><strong>${tr("company")}:</strong> UTC</p>
-  <table><thead><tr><th>${tr("item")}</th><th>${tr("qty")}</th><th>${tr("unit")}</th><th>${tr("unitPrice")}</th><th>${tr("totalPrice")}</th></tr></thead><tbody>${rows}</tbody></table>
-  <div class="total"><p>${tr("subtotal")}: ${subtotal.toLocaleString()} EGP</p><p>${tr("discount")}: ${discount.toLocaleString()} EGP</p><h2>${tr("grandTotal")}: ${grandTotal.toLocaleString()} EGP</h2></div>
-  <div class="terms"><h3>${tr("termsTitle")}</h3><p>${termsText}</p><h3>${tr("exclusionsTitle")}</h3><p>${exclusionsText}</p></div></body></html>`;
+  return `
+    <html dir="${direction}">
+    <head>
+      <title>${tr("quotation")}</title>
+      <style>
+        body{font-family:Arial;padding:30px;direction:${direction}}
+        .logo{width:180px;margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;margin-top:20px}
+        th{background:#111827;color:white}
+        th,td{border:1px solid #ccc;padding:10px;text-align:center;vertical-align:top}
+        td:first-child,th:first-child{text-align:${textAlign}}
+        .total{margin-top:20px;font-size:18px;text-align:${lang()==="ar" ? "left" : "right"}}
+        .terms{margin-top:30px;line-height:1.7}
+      </style>
+    </head>
+    <body>
+      <img class="logo" src="${document.getElementById("utcLogo").src}">
+      <h1>${tr("quotation")}</h1>
+      <p><strong>${tr("client")}:</strong> ${safeText(client)}</p>
+      <p><strong>${tr("company")}:</strong> UTC</p>
+      <table>
+        <thead>
+          <tr>
+            <th>${tr("item")}</th>
+            <th>${tr("qty")}</th>
+            <th>${tr("unit")}</th>
+            <th>${tr("unitPrice")}</th>
+            <th>${tr("totalPrice")}</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="total">
+        <p>${tr("subtotal")}: ${subtotal.toLocaleString()} EGP</p>
+        <p>${tr("discount")}: ${discount.toLocaleString()} EGP</p>
+        <h2>${tr("grandTotal")}: ${grandTotal.toLocaleString()} EGP</h2>
+      </div>
+
+      <div class="terms">
+        <h3>${tr("termsTitle")}</h3>
+        <p>${termsText}</p>
+        <h3>${tr("exclusionsTitle")}</h3>
+        <p>${exclusionsText}</p>
+      </div>
+    </body>
+    </html>
+  `;
 }
 
 function exportPDF(){
@@ -602,6 +656,7 @@ function saveQuotation(){
     terms:document.getElementById("termsConditions").value,
     exclusions:document.getElementById("exclusions").value
   };
+
   savedQuotes.unshift(quote);
   localStorage.setItem("savedQuotes",JSON.stringify(savedQuotes));
   renderSavedQuotes();
@@ -611,6 +666,7 @@ function saveQuotation(){
 function loadQuotation(id){
   const quote = savedQuotes.find(q => q.id === id);
   if(!quote) return;
+
   document.getElementById("clientName").value = quote.client;
   document.getElementById("discount").value = quote.discount || 0;
   document.getElementById("language").value = quote.language || "en";
@@ -628,16 +684,35 @@ function deleteQuotation(id){
 
 function renderSavedQuotes(){
   const div = document.getElementById("savedQuotes");
+
   if(!savedQuotes.length){
     div.innerHTML = "<p>No saved quotations yet.</p>";
     return;
   }
-  div.innerHTML = `<table style="width:100%;border-collapse:collapse"><thead><tr><th>Client</th><th>Date</th><th>Actions</th></tr></thead><tbody>${savedQuotes.map(q => `<tr><td>${safeText(q.client)}</td><td>${safeText(q.date)}</td><td><button class="blue" onclick="loadQuotation(${q.id})">Load</button><button class="red" onclick="deleteQuotation(${q.id})">Delete</button></td></tr>`).join("")}</tbody></table>`;
+
+  div.innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr><th>Client</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        ${savedQuotes.map(q => `
+          <tr>
+            <td>${safeText(q.client)}</td>
+            <td>${safeText(q.date)}</td>
+            <td>
+              <button class="blue" onclick="loadQuotation(${q.id})">Load</button>
+              <button class="red" onclick="deleteQuotation(${q.id})">Delete</button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
 loadDefaultTerms();
 renderSavedQuotes();
-checkUser();
 </script>
 
 </body>
