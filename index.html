@@ -146,6 +146,8 @@ function calculate() {
     <p>Drinking Lines per House: <strong>${drinkingLinesPerHouse}</strong></p>
     <p>Cooling Pad Area: <strong>${padArea.toFixed(2)} m²</strong></p>
     <p>Cooling Pads per House: <strong>${coolingPadsPerHouse}</strong></p>
+    const heatersPerHouse = Math.ceil(length / 30);
+const acfFansPerHouse = heatersPerHouse;
   `;
 }
 
