@@ -1,0 +1,8 @@
+{
+"name": "hato-quotation-system",
+"version": "1.0.0",
+"scripts": {
+"build": "echo build complete",
+"start": "echo start"
+}
+}
